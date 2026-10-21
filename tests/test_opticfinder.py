@@ -233,9 +233,10 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(copper["cable_options"], {
             "CAT5E": 100, "CAT6": 100, "CAT6A": 100, "CAT7": 100, "CAT8": 100,
         })
-        self.assertTrue(any("Cat8.2" in note for note in copper["requirements"]))
-        self.assertTrue(any("Class F" in note for note in copper["requirements"]))
-        self.assertTrue(any("shield" in note for note in copper["requirements"]))
+        self.assertTrue(any("Cat8.2" in note for note in copper["installation_checks"]))
+        self.assertTrue(any("Class F" in note for note in copper["installation_checks"]))
+        self.assertTrue(any("shield" in note for note in copper["installation_checks"]))
+        self.assertFalse(any("shield" in note for note in copper["requirements"]))
         self.assertIn("fluke-copper-categories", copper["sources"])
         self.assertIn("fluke-class-f", copper["sources"])
         self.assertEqual(
@@ -262,6 +263,41 @@ class EngineTests(unittest.TestCase):
                                 }
                                 for match in detailed["candidates"]
                             ))
+                            if candidate["installation_checks"]:
+                                self.assertTrue(any(
+                                    match["installation_checks"] == candidate["installation_checks"]
+                                    for match in detailed["candidates"]
+                                ))
+
+    def test_devices_only_sorts_by_descending_speed_then_dac_copper_mmf_smf(self):
+        catalog = load_catalog()
+        catalog["connection_profiles"].reverse()
+        seen_families = set()
+        seen_speeds = set()
+        with patch("opticfinder.engine.load_catalog", return_value=catalog):
+            for model in ("ms130-24x", "ms150-24p-4x", "ms450-12"):
+                with self.subTest(model=model):
+                    candidates = plan({
+                        "mode": "devices", "endpoint_a": model, "endpoint_b": model,
+                    })["candidates"]
+                    keys = []
+                    for candidate in candidates:
+                        grades = candidate["cable_options"]
+                        if any(grade.startswith("CAT") for grade in grades):
+                            family = 1
+                        elif "DAC" in grades:
+                            family = 0
+                        elif any(grade.startswith("OM") for grade in grades):
+                            family = 2
+                        else:
+                            self.assertTrue(all(grade.startswith("OS") for grade in grades))
+                            family = 3
+                        keys.append((candidate["speed_gbps"], family))
+                        seen_families.add(family)
+                        seen_speeds.add(candidate["speed_gbps"])
+                    self.assertEqual(keys, sorted(keys, key=lambda key: (-key[0], key[1])))
+        self.assertEqual(seen_families, {0, 1, 2, 3})
+        self.assertTrue({1, 2.5, 10, 40, 100} <= seen_speeds)
 
     def test_devices_only_respects_model_qualification_and_port_speeds(self):
         catalog = load_catalog()
@@ -421,11 +457,15 @@ class ServerTests(unittest.TestCase):
             connection.close()
 
     def test_pages_and_health(self):
-        for path in ("/", "/limitations", "/app.js", "/style.css", "/api/catalog", "/api/matrix", "/health"):
+        for path in ("/", "/limitations", "/app.js", "/theme.js", "/favicon.svg",
+                     "/style.css", "/api/catalog", "/api/matrix", "/health"):
             with self.subTest(path=path):
                 status, body, headers = self.call("GET", path)
                 self.assertEqual(status, 200)
                 self.assertIn("Content-Security-Policy", headers)
+                if path in ("/", "/limitations"):
+                    self.assertIn('src="/theme.js"', body.decode())
+                    self.assertIn('class="theme-toggle"', body.decode())
                 if path == "/":
                     page = body.decode()
                     self.assertIn('<option value="devices" selected>', page)
@@ -458,7 +498,7 @@ class ServerTests(unittest.TestCase):
                     self.assertIn('href="/"', page)
                     self.assertNotIn('src="/app.js"', page)
                     self.assertNotIn("<select", page)
-                    self.assertNotIn("<script", page)
+                    self.assertEqual(page.count("<script"), 1)
                     self.assertIn('<details id="technical-details">', page)
                     self.assertIn("<summary>Source documentation</summary>", page)
 

@@ -4,26 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OpticFinder</title>
+  <meta name="description" content="Plan Meraki device connections. Explore catalog-supported ports, transceivers, and cable options.">
+  <script src="/theme.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#planner">Skip to connection planner</a>
   <main>
     <header class="brand-header">
       <div class="brand-identity">
         <span class="brand-mark" aria-hidden="true">
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="15" cy="15" r="11"></circle>
-            <path d="m23 23 9 9" stroke-width="3.5"></path>
+            <path d="M8 10h20v16H8zM4 14h4m20 0h4M4 22h4m20 0h4M13 6v4m10-4v4M13 26v4m10-4v4"></path>
+            <path d="m15 15-3 3 3 3m6-6 3 3-3 3"></path>
           </svg>
         </span>
         <div>
           <p class="brand-eyebrow">Meraki connection planner</p>
           <h1>OpticFinder</h1>
-          <p class="brand-tagline">Find the right connection. See the parts you need.</p>
         </div>
       </div>
       <div class="header-actions">
+        <button class="theme-toggle" type="button" hidden aria-label="Switch color theme">
+          <svg class="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path></svg>
+          <span class="theme-label">Theme</span>
+        </button>
         <nav aria-label="Reference">
           <a class="nav-button" href="/limitations">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -35,22 +42,32 @@
         </nav>
       </div>
     </header>
-    <aside><strong>Alpha prototype, not a purchasing tool.</strong> This tool may make mistakes
+    <section class="workspace-intro" aria-labelledby="workspace-title">
+      <div>
+        <p class="section-kicker">Connection workspace <span class="version-tag">Alpha</span></p>
+        <h2 id="workspace-title">Two devices. One clear connection.</h2>
+        <p>Explore the ports, optics, and cables that bring your network together.</p>
+      </div>
+      <div class="workspace-meta"><span class="status-dot" aria-hidden="true"></span> Local catalog <span class="meta-divider" aria-hidden="true">/</span> Meraki MX + MS</div>
+    </section>
+    <aside class="prototype-notice"><strong>Alpha prototype, not a purchasing tool.</strong> This tool may make mistakes
       or provide inaccurate results. This demo checks a
       limited set of fiber and copper profiles. Public catalog matches do not validate
       firmware or an installed link. No credentials, AI service, or runtime internet access required.</aside>
-    <aside id="coverage"><strong>Device availability.</strong> Device choices may be limited
-      while the tool is in testing. Management and stacking ports are excluded.</aside>
     <form id="planner">
-      <label>Planning mode
-        <select name="mode">
-          <option value="devices" selected>Devices only - show all options</option>
-          <option value="detailed">Detailed - filter ports, speed and cable</option>
-        </select>
-      </label>
+      <div class="planner-toolbar">
+        <div><p class="section-kicker">01 / Configure</p><h2>Build your link</h2></div>
+        <label class="mode-field">Planning mode
+          <select name="mode">
+            <option value="devices" selected>Devices only - show all options</option>
+            <option value="detailed">Detailed - filter ports, speed and cable</option>
+          </select>
+        </label>
+      </div>
       <div class="connection-layout" aria-label="Connection endpoints">
         <fieldset class="device-card">
           <legend>Device A</legend>
+          <div class="endpoint-heading"><span class="endpoint-letter" aria-hidden="true">A</span><span>Source endpoint<small>Meraki MX / MS</small></span></div>
           <label>Device model <select name="endpoint_a" required></select></label>
           <label id="port-field-a" hidden>Port group <select name="interface_a" required disabled></select></label>
           <p id="device-notes-a" class="port-description" aria-live="polite"></p>
@@ -59,19 +76,19 @@
           <span class="cable-end"></span>
           <span class="cable-line"></span>
           <span class="cable-end"></span>
-          <span class="cable-label">Connection</span>
+          <span class="cable-label">LINK</span>
         </div>
         <fieldset class="device-card">
           <legend>Device B</legend>
+          <div class="endpoint-heading"><span class="endpoint-letter" aria-hidden="true">B</span><span>Destination endpoint<small>Meraki MX / MS</small></span></div>
           <label>Device model <select name="endpoint_b" required></select></label>
           <label id="port-field-b" hidden>Port group <select name="interface_b" required disabled></select></label>
           <p id="device-notes-b" class="port-description" aria-live="polite"></p>
         </fieldset>
       </div>
-      <p>Choose two devices to list all options in the bundled catalog, including usable
+      <p class="planner-help">Choose two devices to list all options in the bundled catalog, including usable
         port groups and cable limits. Use detailed mode to narrow the results.
         The same model selected twice represents two separate devices.</p>
-      <p id="compatibility" role="status" aria-live="polite">Choose a device at each end. No port or cable inputs needed.</p>
       <fieldset id="link-requirements" hidden disabled>
         <legend>Link requirements</legend>
         <label>Speed (Gbps) <select name="speed_gbps" required></select></label>
@@ -80,13 +97,29 @@
         <label>Cable type / grade <select name="cable_type" required></select></label>
         <p>For fiber, choose the actual fiber grade; MMF/SMF alone is not specific enough.</p>
       </fieldset>
-      <button disabled>Show all options</button>
+      <div class="planner-submit">
+        <p id="compatibility" role="status" aria-live="polite">Choose a device at each end. No port or cable inputs needed.</p>
+        <button type="submit" disabled>Show all options</button>
+      </div>
     </form>
+    <aside id="coverage"><strong>Catalog scope.</strong> Device choices may be limited
+      while the tool is in testing. Management and stacking ports are excluded.</aside>
     <p id="error" role="alert"></p>
     <section id="result" aria-live="polite" hidden>
+      <p class="section-kicker">02 / Explore results</p>
       <h2 id="status"></h2>
       <p id="message"></p>
       <p id="connection-summary" class="connection-summary"></p>
+      <div id="result-filters" class="result-filters" hidden>
+        <div><p class="section-kicker">Narrow your results</p><p>Filter by speed, then cable family.</p></div>
+        <label>Result speed
+          <select id="result-speed" aria-controls="candidates"></select>
+        </label>
+        <label>Result cable family
+          <select id="result-family" aria-controls="candidates"></select>
+        </label>
+      </div>
+      <p id="result-count" role="status" hidden></p>
       <div id="candidates"></div>
       <details id="technical-details">
         <summary>Technical details and sources</summary>
@@ -100,7 +133,8 @@
       </details>
     </section>
     <footer class="brand-footer">
-      <p><a class="nav-button" href="/limitations">Copper and Fiber limits <span aria-hidden="true">&rarr;</span></a></p>
+      <p class="footer-wordmark">OpticFinder <span>Connection intelligence. Locally.</span></p>
+      <p>Created by <strong>Anthony Sylvester</strong>. &middot; <a href="https://github.com/asylvestro34/OpticFinder" rel="noreferrer">View on GitHub <span aria-hidden="true">&nearr;</span></a></p>
       Independent prototype &mdash; not an official Cisco tool or endorsed by Cisco.
       Cisco and Meraki are trademarks of their respective owners.
     </footer>

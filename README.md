@@ -15,6 +15,8 @@ This is an independent project, not an official Cisco tool or endorsed by Cisco.
 - Shows compatible choices, parts needed at each end, and maximum cable length.
 - Includes a separate **Copper and Fiber limits** reference with easy-to-read cable tables.
 - Runs locally without credentials, external services, or an internet connection.
+- Adaptive light/dark workspace with a theme switch on the planner and cable reference.
+  The initial theme follows your system; a manual choice is remembered in this browser.
 
 The catalog includes **37 MX/MS models**, reviewed October 20, 2026, across
 MS130, MS130R, MS150, MS450, and MX67 through MX450 families. Model availability
@@ -61,6 +63,14 @@ For Raspberry Pi hosting through an ngrok HTTPS tunnel, see
    and maximum lengths (or a fixed-length DAC assembly). Choose one port option
    at each end, not every listed alternative. Check any minimum cable length.
 
+Options are sorted from highest to lowest speed. Within each speed, the order
+is DAC, copper Ethernet, multimode fiber (MMF), then single-mode fiber (SMF),
+where available.
+Use the result speed and cable-family dropdowns to narrow this list without
+rerunning the plan. Both default to **All**; cable families update for the chosen
+speed. Filters can be combined, and the displayed count shows how many options
+remain out of the original matches. New plans reset the result filters.
+
 Equivalent connections are combined into one result rather than counted once
 per cable grade. For example, a single Copper Ethernet option lists Cat5e, Cat6,
 Cat6A, Cat7 and Cat8 together. Speeds, required parts and installation requirements that
@@ -76,6 +86,14 @@ Port groups describe alternatives, not individual physical port numbers.
 Choices with only one available option are selected automatically. The same
 model can be selected twice to represent two separate devices.
 Sources and installation checks are available in the collapsed result details.
+Transceiver part numbers and DAC documentation links open official Cisco/Meraki
+vendor documentation in a new tab. These may be shared accessory tables or
+family datasheets rather than individual product pages. Opening them requires
+internet access; planning remains offline.
+General copper cabling guidance (including Cat7/Cat8 shielding and termination)
+is kept in those installation checks rather than repeated on each option.
+Recommendation-specific requirements, such as port activation, attenuation and
+minimum fiber length, remain visible alongside the relevant option.
 
 ## Data and limitations
 

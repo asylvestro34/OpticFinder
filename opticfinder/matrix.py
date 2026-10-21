@@ -300,7 +300,7 @@ def link_profiles(matrix, endpoints, additional_accessories):
                     "parts_by_port_kind": {"rj45": None},
                     "reach_m": {grade: 100}, "wavelength_nm": None, "connector": "RJ45",
                     "sources": sorted(sources),
-                    "requirements": [
+                    "installation_checks": [
                         "For Cat7 or Cat8, verify shield continuity and correct shield termination.",
                         "Cat7 must form an RJ45-compatible channel meeting the selected Ethernet "
                         "application requirements; Cat7 labeling alone does not establish Class F performance.",

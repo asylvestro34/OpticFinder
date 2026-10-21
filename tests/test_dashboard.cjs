@@ -4,6 +4,93 @@ const {readFileSync} = require("node:fs");
 const {join} = require("node:path");
 const vm = require("node:vm");
 
+function themePage({stored = null, dark = false, storageBlocked = false} = {}) {
+  const listeners = {};
+  const label = {};
+  const toggle = {
+    hidden: true,
+    querySelector: () => label,
+    setAttribute(name, value) { this[name] = value; },
+    addEventListener(name, callback) { listeners[name] = callback; },
+  };
+  const root = {dataset: {}};
+  const system = {
+    matches: dark,
+    addEventListener(name, callback) { listeners.systemChange = callback; },
+  };
+  const warnings = [];
+  const storage = {
+    getItem() {
+      if (storageBlocked) throw new Error("Storage blocked");
+      return stored;
+    },
+    setItem(key, value) {
+      if (storageBlocked) throw new Error("Storage blocked");
+      assert.equal(key, "opticfinder-theme");
+      stored = value;
+    },
+  };
+  vm.runInNewContext(readFileSync(join(__dirname, "..", "opticfinder", "theme.js"), "utf8"), {
+    window: {
+      matchMedia: () => system,
+      localStorage: storage,
+      addEventListener(name, callback) { listeners[name] = callback; },
+    },
+    document: {
+      documentElement: root,
+      querySelector: () => toggle,
+      addEventListener(name, callback) { listeners[name] = callback; },
+    },
+    console: {warn: (...args) => warnings.push(args)},
+  });
+  return {root, toggle, label, system, listeners, warnings, storage, stored: () => stored};
+}
+
+test("theme applies system preference before DOM readiness and follows system changes", () => {
+  const page = themePage({dark: true});
+  assert.equal(page.root.dataset.theme, "dark");
+  assert.equal(page.toggle.hidden, true);
+  page.listeners.DOMContentLoaded();
+  assert.equal(page.toggle.hidden, false);
+  assert.equal(page.label.textContent, "Dark");
+  assert.equal(page.toggle["aria-label"], "Switch to light theme");
+  page.system.matches = false;
+  page.listeners.systemChange();
+  assert.equal(page.root.dataset.theme, "light");
+});
+
+test("manual theme overrides system, persists and synchronizes across pages", () => {
+  const page = themePage({stored: "light", dark: true});
+  page.listeners.DOMContentLoaded();
+  assert.equal(page.root.dataset.theme, "light");
+  page.listeners.click();
+  assert.equal(page.root.dataset.theme, "dark");
+  assert.equal(page.stored(), "dark");
+  assert.equal(page.toggle["aria-label"], "Switch to light theme");
+  page.system.matches = false;
+  page.listeners.systemChange();
+  assert.equal(page.root.dataset.theme, "dark");
+  page.storage.setItem("opticfinder-theme", "light");
+  page.listeners.storage({key: "opticfinder-theme"});
+  assert.equal(page.root.dataset.theme, "light");
+  page.storage.setItem("opticfinder-theme", null);
+  page.listeners.storage({key: null});
+  page.system.matches = true;
+  page.listeners.systemChange();
+  assert.equal(page.root.dataset.theme, "dark");
+});
+
+test("invalid or unavailable stored preferences keep the theme switch usable", () => {
+  const invalid = themePage({stored: "invalid", dark: true});
+  assert.equal(invalid.root.dataset.theme, "dark");
+  const blocked = themePage({storageBlocked: true});
+  blocked.listeners.DOMContentLoaded();
+  blocked.listeners.click();
+  assert.equal(blocked.root.dataset.theme, "dark");
+  assert.equal(blocked.label.textContent, "Dark");
+  assert.equal(blocked.warnings.length, 2);
+});
+
 class Element {
   constructor() {
     this.children = [];
@@ -13,6 +100,7 @@ class Element {
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children = children; }
   addEventListener(name, callback) { this.listeners.set(name, callback); }
+  setAttribute(name, value) { this[name] = value; }
   get text() {
     return this.textContent + this.children.map((child) =>
       typeof child === "string" ? child : child.text
@@ -401,6 +489,73 @@ test("device-only submission renders current results and surfaces API failures",
   assert.equal(vm.runInContext("button.disabled", page.context), false);
 });
 
+test("result filters combine speed and family, preserve order, and reset for new plans", () => {
+  const page = dashboard();
+  const base = result().candidates[0];
+  const data = result([], {
+    request: {mode: "devices", endpoint_a: "a", endpoint_b: "b"},
+    candidates: [
+      {...base, standard: "DAC 10G", speed_gbps: 10, cable_options: {DAC: 3}},
+      {...base, standard: "MMF 10G", speed_gbps: 10, cable_options: {OM3: 300}},
+      {...base, standard: "SMF 10G", speed_gbps: 10, cable_options: {OS2: 10000}},
+      {...base, standard: "Copper 1G", speed_gbps: 1, cable_options: {CAT6: 100}},
+      {...base, standard: "MMF 1G", speed_gbps: 1, cable_options: {OM3: 550}},
+    ],
+  });
+  page.render(data);
+  const speed = page.element("#result-speed");
+  const family = page.element("#result-family");
+  const cards = () => page.element("#candidates");
+  assert.equal(page.element("#result-filters").hidden, false);
+  assert.equal(speed.value, "");
+  assert.equal(family.value, "");
+  assert.deepEqual(speed.children.map(option => option.value), ["", "10", "1"]);
+  assert.deepEqual(family.children.map(option => option.value), ["", "DAC", "CAT", "OM", "OS"]);
+  assert.equal(cards().children.length, 5);
+  assert.match(cards().text, /DAC 10G.*MMF 10G.*SMF 10G.*Copper 1G.*MMF 1G/);
+  family.value = "OM";
+  family.listeners.get("change")();
+  assert.equal(cards().children.length, 2);
+  assert.match(page.element("#result-count").text, /Showing 2 of 5/);
+  speed.value = "10";
+  speed.listeners.get("change")();
+  assert.equal(family.value, "OM");
+  assert.deepEqual(family.children.map(option => option.value), ["", "DAC", "OM", "OS"]);
+  assert.equal(cards().children.length, 1);
+  assert.match(cards().text, /MMF 10G/);
+  family.value = "DAC";
+  family.listeners.get("change")();
+  assert.match(cards().text, /DAC 10G/);
+  speed.value = "1";
+  speed.listeners.get("change")();
+  assert.equal(family.value, "");
+  assert.equal(cards().children.length, 2);
+  assert.deepEqual(family.children.map(option => option.value), ["", "CAT", "OM"]);
+  speed.value = "";
+  speed.listeners.get("change")();
+  assert.equal(cards().children.length, 5);
+  family.value = "OS";
+  family.listeners.get("change")();
+  page.render(data);
+  assert.equal(speed.value, "");
+  assert.equal(family.value, "");
+  assert.equal(cards().children.length, 5);
+  assert.equal(JSON.parse(page.element("#json").text).candidates.length, 5);
+});
+
+test("result filters stay hidden for detailed plans and no matches", () => {
+  const page = dashboard();
+  page.render(result());
+  assert.equal(page.element("#result-filters").hidden, true);
+  assert.equal(page.element("#result-count").hidden, true);
+  page.render(result([], {
+    request: {mode: "devices", endpoint_a: "a", endpoint_b: "b"},
+    candidates: [],
+  }));
+  assert.equal(page.element("#result-filters").hidden, true);
+  assert.equal(page.element("#result-count").hidden, true);
+});
+
 test("fiber results show readable device cards, quantities and reach instead of API status", () => {
   const page = dashboard();
   page.render(result());
@@ -411,6 +566,51 @@ test("fiber results show readable device cards, quantities and reach instead of 
   assert.doesNotMatch(page.element("#candidates").text, /not_verified|Provisional/);
   assert.equal(page.element("#technical-details").open, false);
   assert.match(page.element("#json").text, /not_verified/);
+});
+
+test("transceiver and DAC links use official catalog sources in both planning modes", () => {
+  const page = dashboard();
+  vm.runInContext(`catalog.sources = [
+    {id: "meraki-accessories", url: "https://documentation.meraki.com/accessories"},
+    {id: "cisco-ge-sfp", url: "https://www.cisco.com/gigabit-sfp"}
+  ];`, page.context);
+  const linksIn = element => [
+    ...(element.href ? [element] : []),
+    ...element.children.filter(child => typeof child !== "string").flatMap(linksIn),
+  ];
+  for (const browse of [false, true]) {
+    const data = result(["MA-SFP-1GB-SX", "GLC-SX-MM-RGD"]);
+    if (browse) {
+      data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+      Object.assign(data.candidates[0], {speed_gbps: 1, cable_options: {OM3: 550}});
+    }
+    page.render(data);
+    const links = linksIn(page.element("#candidates"));
+    assert.deepEqual(links.map(link => link.href), [
+      "https://documentation.meraki.com/accessories", "https://www.cisco.com/gigabit-sfp",
+    ]);
+    for (const link of links) {
+      assert.equal(link.target, "_blank");
+      assert.equal(link.rel, "noopener noreferrer");
+      assert.match(link["aria-label"], /Official vendor documentation.*opens in a new tab/);
+    }
+    const dac = result([null, null]);
+    if (browse) {
+      dac.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+      Object.assign(dac.candidates[0], {
+        speed_gbps: 10, cable_options: {DAC: 3},
+        assembly_options: [{part: "MA-CBL-TA-1M", length_m: 1}, {part: "MA-CBL-TA-3M", length_m: 3}],
+      });
+    } else {
+      Object.assign(dac.candidates[0], {assembly_part: "MA-CBL-TA-3M", assembly_length_m: 3});
+    }
+    page.render(dac);
+    const dacLinks = linksIn(page.element("#candidates"));
+    assert.equal(dacLinks.length, browse ? 2 : 1);
+    assert.ok(dacLinks.every(link => link.href === "https://documentation.meraki.com/accessories"));
+  }
+  page.render(result([null, null]));
+  assert.equal(linksIn(page.element("#candidates")).length, 0);
 });
 
 test("mixed copper connection only counts the pluggable optic", () => {
@@ -448,6 +648,29 @@ test("alternatives keep option-specific installation requirements visible", () =
   page.render(data);
   assert.equal(page.element("#status").text, "2 connection options found");
   assert.match(page.element("#candidates").text, /Check required attenuation/);
+});
+
+test("general copper installation guidance is collapsed and deduplicated in both modes", () => {
+  const page = dashboard();
+  for (const browse of [false, true]) {
+    const data = result([null, null]);
+    if (browse) data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+    Object.assign(data.candidates[0], {
+      cable: "RJ45", speed_gbps: 1, cable_options: {CAT6: 100, CAT7: 100, CAT8: 100},
+      installation_checks: ["Verify shield continuity and termination.", "Cat8.2 is excluded."],
+      requirements: ["Device A (WAN): Activate the selected port."],
+    });
+    data.candidates.push({...data.candidates[0], standard: "Alternative copper option"});
+    page.render(data);
+    assert.doesNotMatch(page.element("#candidates").text, /shield|Cat8.2/);
+    assert.match(page.element("#candidates").text, /Activate the selected port/);
+    assert.match(page.element("#next").text, /shield continuity.*Cat8.2.*Verify firmware/);
+    assert.equal(page.element("#next").children.length, 3);
+    assert.equal(page.element("#technical-details").open, false);
+    assert.match(page.element("#json").text, /shield continuity/);
+  }
+  page.render(result());
+  assert.doesNotMatch(page.element("#next").text, /shield|Cat8.2/);
 });
 
 test("no match explains the limitation and clears previous cards", () => {

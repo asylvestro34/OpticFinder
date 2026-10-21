@@ -48,7 +48,7 @@ class WSGITests(unittest.TestCase):
             self.assertTrue(callable(create_application()))
 
     def test_all_public_get_routes(self):
-        for path in ("/", "/limitations", "/app.js", "/style.css",
+        for path in ("/", "/limitations", "/app.js", "/theme.js", "/favicon.svg", "/style.css",
                      "/api/catalog", "/api/matrix", "/health"):
             with self.subTest(path=path):
                 self.assertEqual(self.call(path)["status"], 200)

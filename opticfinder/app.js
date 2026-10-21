@@ -6,6 +6,15 @@ const requirements = document.querySelector("#link-requirements");
 const compatibilityMessage = document.querySelector("#compatibility");
 let catalog;
 let submitting = false;
+let currentResult;
+const resultSpeed = document.querySelector("#result-speed");
+const resultFamily = document.querySelector("#result-family");
+const resultFamilies = [
+  {id: "DAC", label: "Direct attach (DAC)"},
+  {id: "CAT", label: "Copper Ethernet"},
+  {id: "OM", label: "Multimode fiber (MMF)"},
+  {id: "OS", label: "Single-mode fiber (SMF)"},
+];
 
 function devicesOnly() {
   return form.elements.namedItem("mode")?.value === "devices";
@@ -193,6 +202,7 @@ function textElement(tag, text, className) {
 }
 
 function renderResult(result) {
+  currentResult = result;
   const request = result.request;
   const browse = request.mode === "devices";
   const hasMatches = result.candidates.length > 0;
@@ -214,9 +224,95 @@ function renderResult(result) {
       "Catalog-supported alternatives, not a validated link. Choose one port option at each end "
       + "and a listed cable grade; verify the route length and installation requirements.";
   }
+  const filterable = browse && hasMatches;
+  document.querySelector("#result-filters").hidden = !filterable;
+  document.querySelector("#result-count").hidden = !filterable;
+  if (filterable) {
+    const speeds = [...new Set(result.candidates.map(candidate => candidate.speed_gbps))]
+      .sort((a, b) => b - a);
+    resultSpeed.replaceChildren(new Option("All speeds", ""),
+      ...speeds.map(speed => new Option(`${speed} Gbps`, String(speed))));
+    resultSpeed.value = "";
+    resultFamily.value = "";
+    updateResultFamilies();
+  } else {
+    renderCandidates(result, result.candidates);
+  }
+  document.querySelector("#exclusions").replaceChildren(
+    ...(result.exclusions.length ? result.exclusions : ["None for these selections."])
+      .map((text) => textElement("li", text))
+  );
+  document.querySelector("#next").replaceChildren(
+    ...[...new Set([
+      ...result.candidates.flatMap(candidate => candidate.installation_checks || []),
+      ...result.next_steps,
+    ])].map((text) => textElement("li", text))
+  );
+  document.querySelector("#sources").replaceChildren(...result.sources.map((source) => {
+    const li = document.createElement("li");
+    const link = textElement("a", source.title);
+    link.href = source.url;
+    link.rel = "noreferrer";
+    li.append(link, ` - ${source.state}; reviewed: ${source.reviewed_on || "not yet"}. ${source.scope}`);
+    return li;
+  }));
+  document.querySelector("#technical-details").open = false;
+  document.querySelector("#json").textContent = JSON.stringify(result, null, 2);
+}
+
+function matchesResultFamily(candidate, family) {
+  return Object.keys(candidate.cable_options).some(grade => grade.startsWith(family));
+}
+
+function candidatesAtResultSpeed() {
+  return currentResult.candidates.filter(candidate =>
+    !resultSpeed.value || candidate.speed_gbps === Number(resultSpeed.value));
+}
+
+function updateResultFamilies() {
+  const candidates = candidatesAtResultSpeed();
+  const families = resultFamilies.filter(family =>
+    candidates.some(candidate => matchesResultFamily(candidate, family.id)));
+  const previous = resultFamily.value;
+  resultFamily.replaceChildren(new Option("All cable families", ""),
+    ...families.map(family => new Option(family.label, family.id)));
+  resultFamily.value = families.some(family => family.id === previous) ? previous : "";
+  filterResultCandidates();
+}
+
+function filterResultCandidates() {
+  if (!currentResult || currentResult.request.mode !== "devices") return;
+  const candidates = candidatesAtResultSpeed().filter(candidate =>
+    !resultFamily.value || matchesResultFamily(candidate, resultFamily.value));
+  document.querySelector("#result-count").textContent =
+    `Showing ${candidates.length} of ${currentResult.candidates.length} connection options`;
+  renderCandidates(currentResult, candidates);
+}
+
+resultSpeed.addEventListener("change", updateResultFamilies);
+resultFamily.addEventListener("change", filterResultCandidates);
+
+function partReference(part) {
+  const sourceId = part.startsWith("MA-") ? "meraki-accessories"
+    : part.startsWith("GLC-") ? "cisco-ge-sfp" : null;
+  const source = catalog.sources?.find(item => item.id === sourceId);
+  if (!source) return textElement("span", part);
+  const link = textElement("a", part);
+  link.href = source.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.title = `Official vendor documentation for ${part} (opens in a new tab)`;
+  link.setAttribute("aria-label", link.title);
+  return link;
+}
+
+function renderCandidates(result, candidates) {
+  const request = result.request;
+  const browse = request.mode === "devices";
+  const cableType = request.cable_type || request.fiber;
   const candidateContainer = document.querySelector("#candidates");
   candidateContainer.replaceChildren();
-  for (const candidate of result.candidates) {
+  for (const candidate of candidates) {
     const article = document.createElement("article");
     article.className = "connection-option";
     article.append(textElement("h3", browse
@@ -235,10 +331,9 @@ function renderResult(result) {
         const description = option.connection === "direct_attach"
           ? "Integrated DAC connector"
           : option.part || "No transceiver needed";
-        card.append(
-          textElement("p", option.interface_label, "port-description"),
-          textElement("p", description, "part-number")
-        );
+        const partDescription = textElement("p", option.part ? "" : description, "part-number");
+        if (option.part) partDescription.append(partReference(option.part));
+        card.append(textElement("p", option.interface_label, "port-description"), partDescription);
         if (option.part) parts.set(option.part, (parts.get(option.part) || 0) + 1);
       }
       endpoints.append(card);
@@ -254,6 +349,16 @@ function renderResult(result) {
         ? `Parts needed: ${[...parts].map(([part, quantity]) => `${quantity} x ${part}`).join(", ")}, plus the cable below.`
         : "No transceivers needed. Use the cable below.",
     "parts-summary"));
+    const assemblies = candidate.assembly_options
+      || (candidate.assembly_part ? [{part: candidate.assembly_part}] : []);
+    if (assemblies.length) {
+      const references = textElement("p", "Vendor documentation: ", "port-description");
+      assemblies.forEach((assembly, index) => {
+        if (index) references.append(" | ");
+        references.append(partReference(assembly.part));
+      });
+      article.append(references);
+    }
     article.append(textElement("p", browse
       ? candidate.assembly_options
         ? `Available fixed-length assemblies: ${candidate.assembly_options
@@ -278,23 +383,6 @@ function renderResult(result) {
     }
     candidateContainer.append(article);
   }
-  document.querySelector("#exclusions").replaceChildren(
-    ...(result.exclusions.length ? result.exclusions : ["None for these selections."])
-      .map((text) => textElement("li", text))
-  );
-  document.querySelector("#next").replaceChildren(
-    ...result.next_steps.map((text) => textElement("li", text))
-  );
-  document.querySelector("#sources").replaceChildren(...result.sources.map((source) => {
-    const li = document.createElement("li");
-    const link = textElement("a", source.title);
-    link.href = source.url;
-    link.rel = "noreferrer";
-    li.append(link, ` - ${source.state}; reviewed: ${source.reviewed_on || "not yet"}. ${source.scope}`);
-    return li;
-  }));
-  document.querySelector("#technical-details").open = false;
-  document.querySelector("#json").textContent = JSON.stringify(result, null, 2);
 }
 
 function planningRequest() {

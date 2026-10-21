@@ -195,6 +195,7 @@ def plan(request: dict) -> dict:
             } if browse else {"documented_profile_reach_m": reach}),
             "catalog_endpoint_match": "documented",
             "sources": profile["sources"],
+            "installation_checks": profile.get("installation_checks", []),
             "requirements": list(dict.fromkeys([
                 *profile.get("requirements", []),
                 *(f"{'Device A' if field == 'endpoint_a' else 'Device B'}"
@@ -216,6 +217,11 @@ def plan(request: dict) -> dict:
         matched_sources.update(profile["sources"])
     if browse:
         candidates = _combine_cable_options(candidates)
+        candidates.sort(key=lambda candidate: (
+            -candidate["speed_gbps"],
+            next(rank for rank, prefix in enumerate(("DAC", "CAT", "OM", "OS"))
+                 if any(grade.startswith(prefix) for grade in candidate["cable_options"])),
+        ))
     next_steps = []
     for field in fields:
         next_steps.append(

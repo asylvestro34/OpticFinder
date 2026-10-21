@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpticFinder</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="brand-header">
+      <div class="brand-identity">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="15" cy="15" r="11"></circle>
+            <path d="m23 23 9 9" stroke-width="3.5"></path>
+          </svg>
+        </span>
+        <div>
+          <p class="brand-eyebrow">Meraki connection planner</p>
+          <h1>OpticFinder</h1>
+          <p class="brand-tagline">Find the right connection. See the parts you need.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <nav aria-label="Reference">
+          <a class="nav-button" href="/limitations">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v15M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path>
+            </svg>
+            <span>Copper and Fiber limits</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+    <aside><strong>Alpha prototype, not a purchasing tool.</strong> This tool may make mistakes
+      or provide inaccurate results. This demo checks a
+      limited set of fiber and copper profiles. Public catalog matches do not validate
+      firmware or an installed link. No credentials, AI service, or runtime internet access required.</aside>
+    <aside id="coverage"><strong>Device availability.</strong> Device choices may be limited
+      while the tool is in testing. Management and stacking ports are excluded.</aside>
+    <form id="planner">
+      <div class="connection-layout" aria-label="Connection endpoints">
+        <fieldset class="device-card">
+          <legend>Device A</legend>
+          <label>Device model <select name="endpoint_a" required></select></label>
+          <label>Port group <select name="interface_a" required disabled></select></label>
+          <p id="device-notes-a" class="port-description" aria-live="polite"></p>
+        </fieldset>
+        <div class="cable-visual" aria-hidden="true">
+          <span class="cable-end"></span>
+          <span class="cable-line"></span>
+          <span class="cable-end"></span>
+          <span class="cable-label">Connection</span>
+        </div>
+        <fieldset class="device-card">
+          <legend>Device B</legend>
+          <label>Device model <select name="endpoint_b" required></select></label>
+          <label>Port group <select name="interface_b" required disabled></select></label>
+          <p id="device-notes-b" class="port-description" aria-live="polite"></p>
+        </fieldset>
+      </div>
+      <p>Choose the port group at each end. Interface choices describe port groups,
+        not individual port numbers. The same model selected twice represents two
+        separate devices.</p>
+      <p id="compatibility" role="status" aria-live="polite">Choose a device and port group at each end to see available link options.</p>
+      <fieldset id="link-requirements" hidden disabled>
+        <legend>Link requirements</legend>
+        <label>Speed (Gbps) <select name="speed_gbps" required></select></label>
+        <label>Total cable/channel length (m, including patch leads) <input name="distance_m" type="number" min="0.001" step="any" value="30" required></label>
+        <label>Cable family <select id="cable-family" required></select></label>
+        <label>Cable type / grade <select name="cable_type" required></select></label>
+        <p>For fiber, choose the actual fiber grade; MMF/SMF alone is not specific enough.</p>
+      </fieldset>
+      <button disabled>Check connection</button>
+    </form>
+    <p id="error" role="alert"></p>
+    <section id="result" aria-live="polite" hidden>
+      <h2 id="status"></h2>
+      <p id="message"></p>
+      <p id="connection-summary" class="connection-summary"></p>
+      <div id="candidates"></div>
+      <details id="technical-details">
+        <summary>Technical details and sources</summary>
+        <h3>Catalog exclusions</h3>
+        <ul id="exclusions"></ul>
+        <h3>Installation checks</h3>
+        <ul id="next"></ul>
+        <h3>Public sources</h3>
+        <ul id="sources"></ul>
+        <details><summary>Raw API result</summary><pre id="json"></pre></details>
+      </details>
+    </section>
+    <footer class="brand-footer">
+      <p><a class="nav-button" href="/limitations">Copper and Fiber limits <span aria-hidden="true">&rarr;</span></a></p>
+      Independent prototype &mdash; not an official Cisco tool or endorsed by Cisco.
+      Cisco and Meraki are trademarks of their respective owners.
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,73 @@
+:root { color-scheme: light; font-family: "Segoe UI", system-ui, sans-serif; color: #152536; background: #edf4f9; --accent: #0076a8; --navy: #003b5c; }
+body { margin: 0; border-top: 5px solid #00a5df; background: linear-gradient(135deg, #e6f4fc, #f5f8fb 55%); min-height: 100vh; }
+main { max-width: 1050px; margin: 3rem auto; padding: 2rem; background: white; border: 1px solid #d6e5ef; border-radius: 16px; box-shadow: 0 12px 40px #003b5c0d; }
+h1 { color: var(--navy); margin: .15rem 0 .4rem; font-size: 2.6rem; letter-spacing: -.06rem; }
+.brand-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid #d6e5ef; }
+.brand-identity { display: flex; align-items: center; gap: 1rem; }
+.brand-mark { display: grid; place-items: center; flex-shrink: 0; width: 64px; height: 64px; border-radius: 16px; background: var(--navy); color: white; font-weight: 700; font-size: 1.4rem; border-bottom: 5px solid #00a5df; }
+.brand-eyebrow { margin: 0; color: #00658d; font-size: .75rem; font-weight: 700; letter-spacing: .1rem; text-transform: uppercase; }
+.brand-tagline { margin: 0; color: #526575; }
+.header-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .85rem; }
+.nav-button { display: inline-flex; align-items: center; justify-content: center; gap: .65rem; min-height: 44px; box-sizing: border-box; padding: .65rem 1rem; border: 1px solid var(--accent); border-radius: 8px; background: #edf8fe; color: var(--navy); font-size: .9rem; font-weight: 600; text-decoration: none; box-shadow: 0 2px 4px #003b5c12; }
+.nav-button:hover { background: var(--navy); border-color: var(--navy); color: white; }
+.nav-button:active { box-shadow: none; }
+.nav-button svg { flex-shrink: 0; }
+.brand-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #d6e5ef; font-size: .8rem; color: #526575; line-height: 1.6; }
+aside { background: #fff4d6; padding: 1rem; border-left: 4px solid #a16b00; }
+#coverage { margin-top: 1rem; }
+form { display: grid; gap: 1rem; margin: 1.5rem 0; }
+label { display: grid; gap: .3rem; font-weight: 600; }
+input, select, button { font: inherit; padding: .7rem; border: 1px solid #788a9b; border-radius: 5px; }
+input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible { outline: 3px solid #0076a8; outline-offset: 3px; }
+fieldset { min-width: 0; }
+.connection-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, .35fr) minmax(0, 1fr); align-items: center; gap: 1rem; }
+.device-card { display: grid; gap: 1rem; padding: 1rem; border: 1px solid #b5d5e7; border-top: 3px solid #00a5df; border-radius: 10px; background: #f6fbfe; }
+.device-card legend { padding: 0 .4rem; color: #005e89; font-size: 1.15rem; font-weight: 700; }
+.cable-visual { position: relative; display: flex; align-items: center; }
+.cable-line { width: 100%; height: 6px; border-block: 1px solid #557487; background: #b8d4e1; }
+.cable-end { z-index: 1; flex: 0 0 12px; height: 20px; border: 2px solid #557487; border-radius: 3px; background: white; }
+.cable-label { position: absolute; top: 1.2rem; left: 50%; transform: translateX(-50%); color: #526575; font-size: .8rem; white-space: nowrap; }
+fieldset[hidden] { display: none; }
+button { background: var(--accent); color: white; cursor: pointer; border-color: var(--accent); font-weight: 600; border-radius: 24px; }
+button:hover:not(:disabled) { background: var(--navy); border-color: var(--navy); }
+button:disabled { opacity: .5; cursor: wait; }
+pre { background: #f3f6f9; padding: 1rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+li { margin-bottom: .8rem; }
+#error { color: #a31919; }
+a { color: #005e89; }
+.connection-summary { padding: .8rem 1rem; border-radius: 6px; background: #eef5f9; font-weight: 600; }
+.connection-option { margin: 1rem 0; padding: 1.25rem; border: 1px solid #b5c3ce; border-radius: 10px; }
+.connection-option h3 { margin: 0 0 1rem; color: #005e89; }
+.result-endpoints { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.result-device { min-width: 0; padding: 1rem; border-radius: 6px; background: #f8fafc; overflow-wrap: anywhere; }
+.result-device h4 { margin: 0; color: #526575; }
+.result-device p { margin: .5rem 0 0; }
+.device-name, .part-number { font-weight: 700; }
+.port-description { color: #526575; font-size: .9rem; }
+.parts-summary { font-weight: 600; }
+.cable-summary { margin-bottom: .4rem; }
+.connection-requirement { padding: .75rem; border-left: 3px solid #a16b00; background: #fff4d6; }
+#technical-details { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #d6e0e7; }
+summary { cursor: pointer; font-weight: 600; color: #005e89; }
+.reference-page { line-height: 1.6; }
+.reference-page section { margin-top: 2rem; scroll-margin-top: 1rem; }
+.reference-page h2 { color: var(--navy); }
+.reference-nav { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; padding: 1rem; background: #edf8fe; border-radius: 8px; }
+.reference-table { overflow-x: auto; }
+.reference-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.reference-table caption { text-align: left; margin-bottom: .6rem; color: #526575; }
+.reference-table th, .reference-table td { padding: .8rem; border: 1px solid #d6e5ef; vertical-align: top; }
+.reference-table thead { background: #edf8fe; }
+@media (max-width: 700px) {
+  main { margin: 0; padding: 1rem; }
+  .brand-mark { width: 48px; height: 48px; font-size: 1.1rem; border-radius: 12px; }
+  h1 { font-size: 2rem; }
+  .header-actions { width: 100%; align-items: flex-start; }
+  .header-actions nav, .nav-button { width: 100%; }
+  .connection-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .cable-visual { justify-self: center; width: 44px; height: 52px; flex-direction: column; }
+  .cable-line { width: 6px; height: 100%; border: 0; border-inline: 1px solid #557487; }
+  .cable-end { flex-basis: 12px; width: 20px; height: 12px; }
+  .cable-label { top: 50%; left: 1.5rem; transform: translateY(-50%); }
+  .result-endpoints { grid-template-columns: minmax(0, 1fr); }
+}

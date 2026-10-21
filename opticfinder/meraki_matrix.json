@@ -1,0 +1,961 @@
+{
+  "source_url": "https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories",
+  "retrieved_on": "2026-10-20",
+  "scope": "Meraki-branded transceivers and data-port DACs in the public accessory tables",
+  "exclusions": [
+    "Not the complete Cisco TMG matrix; Cisco-branded optics are not imported.",
+    "Stacking, StackPower cables and uplink modules are not data-link optics.",
+    "Family qualifications do not define the physical ports of each device model.",
+    "C9300 listings apply to cloud-managed Meraki deployments only.",
+    "MA-SFP-1GB-TX excludes MS130R, MS390 and C9300/X/L.",
+    "MA-SFP-10GB-LRM excludes C9300X; OM2 requires 500 MHz/km modal bandwidth.",
+    "MA-SFP-10GB-ER has additional MS125 compatibility guidance.",
+    "Mode-conditioned LX10 over multimode fiber requires separate cabling modeling."
+  ],
+  "accessories": [
+    {
+      "part": "MA-CBL-TA-1M",
+      "standard": "10GSFP+Cu",
+      "speed_gbps": 10,
+      "media": "direct_attach",
+      "port_kind": "sfp",
+      "reach_m": {
+        "DAC": 1.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX450 / C8355-G2-MX / C8455-G2-MX MS125 / MS130-X/ MS150-4X / MS225 / MS250 MS350 / MS355 / MS390 / C9300/C9300L/ MS410 / MS425",
+          "families": [
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX450",
+            "MX95"
+          ]
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "assembly_length_m": 1.0,
+      "connector": "Integrated SFP+ passive twinax cable",
+      "wavelength_nm": null
+    },
+    {
+      "part": "MA-CBL-TA-3M",
+      "standard": "10GSFP+Cu",
+      "speed_gbps": 10,
+      "media": "direct_attach",
+      "port_kind": "sfp",
+      "reach_m": {
+        "DAC": 3.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX450 / C8355-G2-MX / C8455-G2-MX MS125 / MS130-X/ MS150-4X / MS225 / MS250 MS350 / MS355 / MS390 / C9300/C9300L/ MS410 / MS425",
+          "families": [
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX450",
+            "MX95"
+          ]
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "assembly_length_m": 3.0,
+      "connector": "Integrated SFP+ passive twinax cable",
+      "wavelength_nm": null
+    },
+    {
+      "part": "MA-QSFP-100G-LR4",
+      "standard": "100GBASE-LR4",
+      "speed_gbps": 100,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OS1": 10000.0,
+        "OS2": 10000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS450",
+          "families": [
+            "MS450"
+          ],
+          "fiber_description": "OS1, OS2",
+          "documented_distance": "10 km",
+          "reach_m": {
+            "OS1": 10000.0,
+            "OS2": 10000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": "1295, 1300, 1304, 1309",
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-QSFP-100G-SR4",
+      "standard": "100GBASE-SR4",
+      "speed_gbps": 100,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OM3": 70.0,
+        "OM4": 100.0,
+        "OM5": 100.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS450",
+          "families": [
+            "MS450"
+          ],
+          "fiber_description": "OM3, OM4/OM5",
+          "documented_distance": "70 m, 100 m",
+          "reach_m": {
+            "OM3": 70.0,
+            "OM4": 100.0,
+            "OM5": 100.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 850,
+      "connector": "MPO12; verify fiber count and polarity"
+    },
+    {
+      "part": "MA-QSFP-40G-CSR4",
+      "standard": "QSFP - MPO12",
+      "speed_gbps": 40,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OM2": 82.0,
+        "OM3": 300.0,
+        "OM4": 400.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS355 MS390 / C9300* MS425 / MS450",
+          "families": [
+            "C9300",
+            "MS355",
+            "MS390",
+            "MS425",
+            "MS450"
+          ],
+          "fiber_description": "OM2, OM3, OM4",
+          "documented_distance": "82 m, 300 m, 400 m",
+          "reach_m": {
+            "OM2": 82.0,
+            "OM3": 300.0,
+            "OM4": 400.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 850,
+      "connector": "MPO12; verify fiber count and polarity"
+    },
+    {
+      "part": "MA-QSFP-40G-LR4",
+      "standard": "QSFP - LC",
+      "speed_gbps": 40,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OS1": 10000.0,
+        "OS2": 10000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS355 MS390 / C9300* MS425 / MS450",
+          "families": [
+            "C9300",
+            "MS355",
+            "MS390",
+            "MS425",
+            "MS450"
+          ],
+          "fiber_description": "OS1, OS2",
+          "documented_distance": "10 km",
+          "reach_m": {
+            "OS1": 10000.0,
+            "OS2": 10000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1310,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-QSFP-40G-SR-BD",
+      "standard": "QSFP - Duplex LC",
+      "speed_gbps": 40,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OM2": 30.0,
+        "OM3": 100.0,
+        "OM4": 150.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS355 MS390 / C9300* MS425 / MS450",
+          "families": [
+            "C9300",
+            "MS355",
+            "MS390",
+            "MS425",
+            "MS450"
+          ],
+          "fiber_description": "OM2, OM3, OM4",
+          "documented_distance": "30 m, 100 m, 150 m",
+          "reach_m": {
+            "OM2": 30.0,
+            "OM3": 100.0,
+            "OM4": 150.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": "832-918",
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-QSFP-40G-SR4",
+      "standard": "QSFP - MPO12",
+      "speed_gbps": 40,
+      "media": "fiber",
+      "port_kind": "qsfp",
+      "reach_m": {
+        "OM2": 30.0,
+        "OM3": 100.0,
+        "OM4": 150.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS355 MS390 / C9300* MS425 / MS450",
+          "families": [
+            "C9300",
+            "MS355",
+            "MS390",
+            "MS425",
+            "MS450"
+          ],
+          "fiber_description": "OM2, OM3, OM4",
+          "documented_distance": "30 m, 100 m, 150 m",
+          "reach_m": {
+            "OM2": 30.0,
+            "OM3": 100.0,
+            "OM4": 150.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 850,
+      "connector": "MPO12; verify fiber count and polarity"
+    },
+    {
+      "part": "MA-SFP-10GB-ER",
+      "standard": "10GBASE-ER",
+      "speed_gbps": 10,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OS1": 40000.0,
+        "OS2": 40000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX450 / C8235-G2-MX / C8355-G2-MX / C8455-G2-MX MS130-X / MS150-4X / MS225 MS250 / MS350 MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX450",
+            "MX95"
+          ],
+          "fiber_description": "OS1/OS2",
+          "documented_distance": "40 km",
+          "reach_m": {
+            "OS1": 40000.0,
+            "OS2": 40000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1550,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-10GB-LR",
+      "standard": "10GBASE-LR",
+      "speed_gbps": 10,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OS1": 10000.0,
+        "OS2": 10000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX / C8355-G2-MX / C8235-G2-MX MS125 / MS130-X / MS150-4X / MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OS1/OS2",
+          "documented_distance": "10 km",
+          "reach_m": {
+            "OS1": 10000.0,
+            "OS2": 10000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1310,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-10GB-LRM",
+      "standard": "10GBASE-LRM",
+      "speed_gbps": 10,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OM1": 220.0,
+        "OM2": 220.0,
+        "OM3": 220.0,
+        "OS1": 300.0,
+        "OS2": 300.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MS225 / MS250 MS350 / MS355 MS390/C9300** MS410 / MS425 C8235-G2-MX / C8355-G2-MX / C8455-G2-MX",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425"
+          ],
+          "fiber_description": "OM1",
+          "documented_distance": "220 m",
+          "reach_m": {
+            "OM1": 220.0
+          }
+        },
+        {
+          "compatibility": "MS225 / MS250 MS350 / MS355 MS390/C9300** MS410 / MS425 C8235-G2-MX / C8355-G2-MX / C8455-G2-MX",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425"
+          ],
+          "fiber_description": "OM2",
+          "documented_distance": "220 m *",
+          "reach_m": {
+            "OM2": 220.0
+          }
+        },
+        {
+          "compatibility": "MS225 / MS250 MS350 / MS355 MS390/C9300** MS410 / MS425 C8235-G2-MX /C8355-G2-MX / C8455-G2-MX",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425"
+          ],
+          "fiber_description": "OM3",
+          "documented_distance": "220 m",
+          "reach_m": {
+            "OM3": 220.0
+          }
+        },
+        {
+          "compatibility": "MX95 / MX105 / MX250 MX400 / MX450 / MX600 / C8455-G2-MX / C8235-G2-MX / C8355-G2-MX / C8455-G2-MX MS390/C9300** MS225 / MS250 MS350 / MS355 MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OS1/OS2",
+          "documented_distance": "300 m",
+          "reach_m": {
+            "OS1": 300.0,
+            "OS2": 300.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1310,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-10GB-SR",
+      "standard": "10GBASE-SR",
+      "speed_gbps": 10,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OM1": 26.0,
+        "OM2": 82.0,
+        "OM3": 300.0,
+        "OM4": 400.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX / C8355-G2-MX / C8235-G2-MX MS125 / MS130-X / MS150-4X / MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OM1",
+          "documented_distance": "26 m",
+          "reach_m": {
+            "OM1": 26.0
+          }
+        },
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX / C8355-G2-MX / C8235-G2-MX MS125 / MS130-X / MS150-4X / MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OM2",
+          "documented_distance": "82 m",
+          "reach_m": {
+            "OM2": 82.0
+          }
+        },
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX / C8355-G2-MX / C8235-G2-MX MS125 / MS130-X / MS150-4X / MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OM3",
+          "documented_distance": "300 m",
+          "reach_m": {
+            "OM3": 300.0
+          }
+        },
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX / C8355-G2-MX / C8235-G2-MX MS125 / MS130-X / MS150-4X / MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS125",
+            "MS130-X",
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX95"
+          ],
+          "fiber_description": "OM4",
+          "documented_distance": "400 m",
+          "reach_m": {
+            "OM4": 400.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 850,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-10GB-ZR",
+      "standard": "10GBASE-ZR",
+      "speed_gbps": 10,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OS1": 80000.0,
+        "OS2": 80000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX95 / MX105 MX250 / MX450 MS150-4X / MS225 / MS250 MS350 / MS355 MS410 / MS425",
+          "families": [
+            "MS150-4X",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS410",
+            "MS425",
+            "MX105",
+            "MX250",
+            "MX450",
+            "MX95"
+          ],
+          "fiber_description": "OS1/OS2",
+          "documented_distance": "80 km",
+          "reach_m": {
+            "OS1": 80000.0,
+            "OS2": 80000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1550,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-1GB-LX10",
+      "standard": "1000BASE-LX10",
+      "speed_gbps": 1,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OS1": 10000.0,
+        "OS2": 10000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 MX450 / MX600 / C8455-G2-MX MS120 / MS125 MS130 / MS150 / MS210 / MS225 MS250 / MS350 MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8455-G2-MX",
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "OS1/OS2",
+          "documented_distance": "10 km",
+          "reach_m": {
+            "OS1": 10000.0,
+            "OS2": 10000.0
+          }
+        },
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 MX450 / MX600 / C8235-G2-MX / C8355-G2-MX / C8455-G2-MX MS120 / MS125 MS130 / MS150 / MS210 / MS225 MS250 / MS350 MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C8235-G2-MX",
+            "C8355-G2-MX",
+            "C8455-G2-MX",
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "with LC mode conditioning cable",
+          "documented_distance": "550 m",
+          "requires": "LC mode-conditioning cable; not modeled by the planner",
+          "reach_m": {}
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 1310,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-1GB-SX",
+      "standard": "1000BASE-SX",
+      "speed_gbps": 1,
+      "media": "fiber",
+      "port_kind": "sfp",
+      "reach_m": {
+        "OM1": 220.0,
+        "OM2": 550.0,
+        "OM3": 550.0,
+        "OM4": 1000.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 MX450 / MX600 MS120 / MS125 MS130 / MS150 / MS210 / MS225 MS250 / MS350 MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "OM1",
+          "documented_distance": "220 m",
+          "reach_m": {
+            "OM1": 220.0
+          }
+        },
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 . MX450 / MX600 MS120 / MS125 MS130 / MS150 / MS210 / MS225 MS250 / MS350 MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "OM2",
+          "documented_distance": "550 m",
+          "reach_m": {
+            "OM2": 550.0
+          }
+        },
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 MX450 / MX600 MS120 / MS125 MS130 / MS150 / MS210 MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "OM3",
+          "documented_distance": "550 m",
+          "reach_m": {
+            "OM3": 550.0
+          }
+        },
+        {
+          "compatibility": "MX75 / MX84 MX85 / MX95 MX100 / MX105 MX250 / MX400 MX450 / MX600 MS120 / MS125 MS130 / MS150 / MS210 MS225 / MS250 MS350 / MS355 MS390 / C9300* MS410 / MS425",
+          "families": [
+            "C9300",
+            "MS120",
+            "MS125",
+            "MS130",
+            "MS150",
+            "MS210",
+            "MS225",
+            "MS250",
+            "MS350",
+            "MS355",
+            "MS390",
+            "MS410",
+            "MS425",
+            "MX100",
+            "MX105",
+            "MX250",
+            "MX400",
+            "MX450",
+            "MX600",
+            "MX75",
+            "MX84",
+            "MX85",
+            "MX95"
+          ],
+          "fiber_description": "OM4",
+          "documented_distance": "1 km",
+          "reach_m": {
+            "OM4": 1000.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": 850,
+      "connector": "Duplex LC; verify connector polish"
+    },
+    {
+      "part": "MA-SFP-1GB-TX",
+      "standard": "1000BASE-T",
+      "speed_gbps": 1,
+      "media": "copper",
+      "port_kind": "sfp",
+      "reach_m": {
+        "CAT5E": 100.0,
+        "CAT6": 100.0,
+        "CAT6A": 100.0
+      },
+      "qualifications": [
+        {
+          "compatibility": "All MXes and C8k-G2-MX All MSes, except MS130R and Catalyst Not supported by MS390/ C9300/X/L",
+          "families": [
+            "C9300",
+            "MS390"
+          ],
+          "fiber_description": "N/A",
+          "documented_distance": "100 m",
+          "reach_m": {
+            "CAT5E": 100.0,
+            "CAT6": 100.0,
+            "CAT6A": 100.0
+          }
+        }
+      ],
+      "sources": [
+        "meraki-accessories"
+      ],
+      "wavelength_nm": null,
+      "connector": "RJ45"
+    }
+  ]
+}

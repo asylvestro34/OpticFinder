@@ -1,0 +1,497 @@
+{
+  "schema_version": 6,
+  "platform_scope": {
+    "reviewed_on": "2026-10-20",
+    "definition": "Physical MX and MS models not past their published end-of-sale date on the review date. Catalyst, C8000, Z-series and virtual appliances are outside this scope.",
+    "sources": ["meraki-lifecycle"],
+    "notices": [
+      "MS450-12 remains included until its October 29, 2026 end-of-sale date.",
+      "MX67C and MX68CW remain included until their November 27, 2026 end-of-sale date."
+    ]
+  },
+  "cable_types": [
+    {"id": "OM1", "label": "MMF - OM1"},
+    {"id": "OM2", "label": "MMF - OM2"},
+    {"id": "OM3", "label": "MMF - OM3"},
+    {"id": "OM4", "label": "MMF - OM4"},
+    {"id": "OM5", "label": "MMF - OM5"},
+    {"id": "OS1", "label": "SMF - OS1"},
+    {"id": "OS2", "label": "SMF - OS2 (G.652 compliant)"},
+    {"id": "CAT5E", "label": "Copper - Cat5e"},
+    {"id": "CAT6", "label": "Copper - Cat6"},
+    {"id": "CAT6A", "label": "Copper - Cat6A"},
+    {"id": "DAC", "label": "Direct attach - passive twinax"}
+  ],
+  "sources": [
+    {
+      "id": "meraki-ms130",
+      "title": "Meraki MS130 Series Installation Guide",
+      "url": "https://documentation.meraki.com/Switching/MS_-_Switches/Install_and_Get_Started/Installation_Guides/MS130_Series_Installation_Guide",
+      "reviewed_on": "2026-10-20",
+      "state": "reviewed",
+      "scope": "All eleven MS130 models: physical specifications and port LED speed descriptions. Management ports excluded. Port groups, not physical port numbering, are modeled."
+    },
+    {
+      "id": "meraki-accessories",
+      "title": "Meraki SFP and Stacking Accessories",
+      "url": "https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories",
+      "reviewed_on": "2026-10-20",
+      "state": "reviewed",
+      "scope": "Imported public Meraki-branded transceiver and data-port DAC tables across all listed families. Family and media qualifications are retained separately; physical port modeling is required before a device can be selected. Not the Cisco TMG matrix. Runtime uses the bundled snapshot."
+    },
+    {
+      "id": "copper-rule",
+      "title": "OpticFinder twisted-pair channel planning rules",
+      "url": "https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories",
+      "reviewed_on": "2026-10-20",
+      "state": "engineering_rule",
+      "scope": "Engineering rules, not device-specific category qualifications: certified four-pair Cat5e/Cat6/Cat6A channels including patch leads, 1G/2.5G/5G to 100m. Only documented native port speeds are offered. Native RJ45 does not require transceiver qualification. Cisco Multigigabit Ethernet white paper documents 802.3bz operation over existing Cat5e."
+    },
+    {
+      "id": "cisco-mgig-cabling", "title": "Cisco Multigigabit Ethernet Technology",
+      "url": "https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/catalyst-multigigabit-switching/nb-06-transform-multigigabit-wp-cte-en.html",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "802.3bz multigigabit cabling, 100m reach and Cat5e/Cat6/Cat6A speed table. Does not qualify a device's port or certify an installed cable channel."
+    },
+    {
+      "id": "meraki-lifecycle",
+      "title": "Meraki End-of-Life Products and Dates",
+      "url": "https://documentation.meraki.com/Platform_Management/Product_Information/End-of-Life_Notices/Meraki_End-of-Life_(EOL)_Products_and_Dates",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Current means not past the published last order date, not the end-of-support date. Snapshot reviewed October 20, 2026; lifecycle changes require catalog review."
+    },
+    {
+      "id": "meraki-ms150", "title": "Meraki MS150 Datasheet",
+      "url": "https://documentation.meraki.com/Switching/MS_-_Switches/Product_Information/Overviews_and_Datasheets/MS150_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Twelve exact models, 1G and 5G native port groups, 4G/4X uplinks and listed accessories. Management and dedicated stacking ports excluded."
+    },
+    {
+      "id": "meraki-ms130r", "title": "Meraki MS130R Datasheet",
+      "url": "https://documentation.meraki.com/Switching/MS_-_Switches/Product_Information/Overviews_and_Datasheets/MS130R_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "MS130R-8P: eight native 1G RJ45 and two 1G SFP ports. Only the four explicitly listed rugged GLC modules are offered; ordinary MA transceivers are not substituted."
+    },
+    {
+      "id": "cisco-ge-sfp", "title": "Cisco Gigabit Ethernet SFP Data Sheet",
+      "url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/gigabit-ethernet-gbic-sfp-modules/datasheet-c78-366584.html",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Rugged SX, LX/LH, ZX and copper module specifications, interoperable Gigabit standards, LC/PC or UPC connectors, 2m optical minimum and ZX attenuation/link-budget requirements. LX multimode mode conditioning is not modeled."
+    },
+    {
+      "id": "meraki-ms450", "title": "Meraki MS450 Datasheet",
+      "url": "https://documentation.meraki.com/Switching/MS_-_Switches/Product_Information/Overviews_and_Datasheets/MS450_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "MS450-12: twelve 40G QSFP+ and two 100G QSFP28 data ports. Dedicated stacking and management ports, breakout and undocumented downshift modes excluded."
+    },
+    {
+      "id": "meraki-mx67-68", "title": "Meraki MX67 and MX68 Datasheet",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX67_and_MX68_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "MX67/W/C: one WAN, three dedicated LAN and one convertible LAN/WAN 1G RJ45. MX68/W/CW: two WAN and ten LAN 1G RJ45. Wireless/cellular variants share the wired port layout."
+    },
+    {
+      "id": "meraki-mx75", "title": "Meraki MX75 Datasheet",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX75_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Ten 1G RJ45 LAN, two 1G RJ45 WAN and one 1G SFP WAN physical interfaces. WAN activation depends on firmware and paired interface selection."
+    },
+    {
+      "id": "meraki-mx85", "title": "Meraki MX85 Series Hardware Installation Guide",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX85_Series_Hardware_Installation_Guide",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Eight 1G RJ45 and two 1G SFP LAN; two 1G RJ45 and two 1G SFP WAN physical interfaces."
+    },
+    {
+      "id": "meraki-mx95-105", "title": "Meraki MX95/105 Datasheet",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX95%2F%2F105_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Four 1G RJ45 and two 10G SFP+ LAN; two 2.5G RJ45 and two 10G SFP+ WAN. SFP+ supports 1G; WAN activation is firmware-dependent. Management port excluded."
+    },
+    {
+      "id": "meraki-mx250", "title": "Meraki MX250 Installation Guide",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX250_Installation_Guide",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Eight 1G RJ45, eight 1G SFP and eight 10G SFP+ LAN; two 10G SFP+ WAN. Only documented rated speeds modeled for SFP+ groups. Management port excluded."
+    },
+    {
+      "id": "meraki-mx450", "title": "Meraki MX450 Datasheet",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX450_Datasheet",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Eight 1G RJ45, eight 1G SFP and eight 10G SFP+ LAN; two 10G SFP+ WAN. Only documented rated speeds modeled for SFP+ groups. Management port excluded."
+    },
+    {
+      "id": "meraki-mx-wan", "title": "WAN Behavior on MX75/85/95/105",
+      "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105",
+      "reviewed_on": "2026-10-20", "state": "reviewed",
+      "scope": "Paired SFP/RJ45 WAN activation and reboot behavior; normally two active uplinks, with a backup uplink available on MX18.2+ MultiWAN. Physical port counts do not imply simultaneous availability."
+    }
+  ],
+  "additional_accessories": [
+    {
+      "part": "GLC-SX-MM-RGD", "standard": "1000BASE-SX", "speed_gbps": 1,
+      "media": "fiber", "port_kind": "sfp", "wavelength_nm": 850,
+      "connector": "Duplex LC; verify connector polish", "minimum_distance_m": 2,
+      "reach_m": {"OM1": 275, "OM2": 550, "OM3": 1000, "OM4": 1000, "OM5": 1000},
+      "qualifications": [{"compatibility": "MS130R only", "families": ["MS130R"]}],
+      "sources": ["meraki-ms130r", "cisco-ge-sfp"]
+    },
+    {
+      "part": "GLC-LX-SM-RGD", "standard": "1000BASE-LX/LH", "speed_gbps": 1,
+      "media": "fiber", "port_kind": "sfp", "wavelength_nm": 1310,
+      "connector": "Duplex LC; verify connector polish", "minimum_distance_m": 2,
+      "reach_m": {"OS1": 10000, "OS2": 10000},
+      "qualifications": [{"compatibility": "MS130R only", "families": ["MS130R"]}],
+      "sources": ["meraki-ms130r", "cisco-ge-sfp"]
+    },
+    {
+      "part": "GLC-ZX-SM-RGD", "standard": "1000BASE-ZX", "speed_gbps": 1,
+      "media": "fiber", "port_kind": "sfp", "wavelength_nm": 1550,
+      "connector": "Duplex LC; verify connector polish", "minimum_distance_m": 2,
+      "reach_m": {"OS1": 70000, "OS2": 70000},
+      "requirements": ["ZX reach depends on the 21 dB link budget. For span loss below 8 dB, Cisco specifies a 10 dB attenuator at each receiver. Verify optical power before deployment."],
+      "qualifications": [{"compatibility": "MS130R only", "families": ["MS130R"]}],
+      "sources": ["meraki-ms130r", "cisco-ge-sfp"]
+    },
+    {
+      "part": "GLC-T-RGD", "standard": "1000BASE-T", "speed_gbps": 1,
+      "media": "copper", "port_kind": "sfp", "wavelength_nm": null,
+      "connector": "RJ45", "reach_m": {"CAT5E": 100, "CAT6": 100, "CAT6A": 100},
+      "qualifications": [{"compatibility": "MS130R only", "families": ["MS130R"]}],
+      "sources": ["meraki-ms130r", "cisco-ge-sfp"]
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "ms130-24x",
+      "matrix_families": ["MS130", "MS130-X"],
+      "label": "Meraki MS130-24X",
+      "vendor": "Meraki",
+      "kind": "switch",
+      "support": "not_verified",
+      "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "18 x 1G RJ45 ports", "kind": "rj45", "port_count": 18, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "6 x 2.5G RJ45 ports", "kind": "rj45", "port_count": 6, "speeds_gbps": [1, 2.5]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms130-24p",
+      "matrix_families": ["MS130"],
+      "label": "Meraki MS130-24P",
+      "vendor": "Meraki",
+      "kind": "switch",
+      "support": "not_verified",
+      "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-8", "label": "Meraki MS130-8", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "8 x 1G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "2 x 1G SFP ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-8p", "label": "Meraki MS130-8P", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "8 x 1G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "2 x 1G SFP ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-8p-i", "label": "Meraki MS130-8P-I", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "8 x 1G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "2 x 1G SFP ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-8x", "label": "Meraki MS130-8X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130", "MS130-X"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "6 x 1G RJ45 ports", "kind": "rj45", "port_count": 6, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "2 x 2.5G RJ45 ports", "kind": "rj45", "port_count": 2, "speeds_gbps": [1, 2.5]},
+        {"id": "sfp-uplink", "label": "2 x 10G SFP+ ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms130-12x", "label": "Meraki MS130-12X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130", "MS130-X"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "8 x 1G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "4 x 2.5G RJ45 ports", "kind": "rj45", "port_count": 4, "speeds_gbps": [1, 2.5]},
+        {"id": "sfp-uplink", "label": "2 x 10G SFP+ ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms130-24", "label": "Meraki MS130-24", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-48", "label": "Meraki MS130-48", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-48p", "label": "Meraki MS130-48P", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms130-48x", "label": "Meraki MS130-48X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130", "MS130-X"], "sources": ["meraki-ms130", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "40 x 1G RJ45 ports", "kind": "rj45", "port_count": 40, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "8 x 2.5G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1, 2.5]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms130r-8p", "label": "Meraki MS130R-8P", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS130R"], "sources": ["meraki-ms130r", "cisco-ge-sfp"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "8 x 1G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "2 x 1G SFP ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-24t-4g", "label": "Meraki MS150-24T-4G", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-24p-4g", "label": "Meraki MS150-24P-4G", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-24t-4x", "label": "Meraki MS150-24T-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-24p-4x", "label": "Meraki MS150-24P-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "24 x 1G RJ45 ports", "kind": "rj45", "port_count": 24, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-24mp-4x", "label": "Meraki MS150-24MP-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "16 x 1G RJ45 ports", "kind": "rj45", "port_count": 16, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "8 x 5G RJ45 ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1, 2.5, 5]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-48t-4g", "label": "Meraki MS150-48T-4G", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-48lp-4g", "label": "Meraki MS150-48LP-4G", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-48fp-4g", "label": "Meraki MS150-48FP-4G", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 1G SFP ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1]}
+      ]
+    },
+    {
+      "id": "ms150-48t-4x", "label": "Meraki MS150-48T-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-48lp-4x", "label": "Meraki MS150-48LP-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-48fp-4x", "label": "Meraki MS150-48FP-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "48 x 1G RJ45 ports", "kind": "rj45", "port_count": 48, "speeds_gbps": [1]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms150-48mp-4x", "label": "Meraki MS150-48MP-4X", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "matrix_families": ["MS150", "MS150-4X"], "sources": ["meraki-ms150", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-1g", "label": "32 x 1G RJ45 ports", "kind": "rj45", "port_count": 32, "speeds_gbps": [1]},
+        {"id": "rj45-mgig", "label": "16 x 5G RJ45 ports", "kind": "rj45", "port_count": 16, "speeds_gbps": [1, 2.5, 5]},
+        {"id": "sfp-uplink", "label": "4 x 10G SFP+ ports", "kind": "sfp", "port_count": 4, "speeds_gbps": [1, 10]}
+      ]
+    },
+    {
+      "id": "ms450-12", "label": "Meraki MS450-12", "vendor": "Meraki", "kind": "switch", "support": "not_verified",
+      "end_of_sale": "2026-10-29",
+      "matrix_families": ["MS450"], "sources": ["meraki-ms450", "meraki-accessories", "meraki-lifecycle"],
+      "interfaces": [
+        {"id": "qsfp-40g", "label": "12 x 40G QSFP+ ports", "kind": "qsfp", "port_count": 12, "speeds_gbps": [40]},
+        {"id": "qsfp-100g", "label": "2 x 100G QSFP28 ports", "kind": "qsfp", "port_count": 2, "speeds_gbps": [100]}
+      ]
+    },
+    {
+      "id": "mx67", "label": "Meraki MX67", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX67"], "sources": ["meraki-mx67-68"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "3 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 3, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "1 x 1G RJ45 WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "wan"},
+        {"id": "rj45-convertible", "label": "1 x 1G RJ45 LAN / WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "lan_wan", "requirements": ["Configure this convertible port as LAN or WAN as required; it cannot serve both roles at once."]}
+      ]
+    },
+    {
+      "id": "mx67w", "label": "Meraki MX67W", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX67"], "sources": ["meraki-mx67-68"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "3 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 3, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "1 x 1G RJ45 WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "wan"},
+        {"id": "rj45-convertible", "label": "1 x 1G RJ45 LAN / WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "lan_wan", "requirements": ["Configure this convertible port as LAN or WAN as required; it cannot serve both roles at once."]}
+      ]
+    },
+    {
+      "id": "mx67c", "label": "Meraki MX67C", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified", "end_of_sale": "2026-11-27",
+      "matrix_families": ["MX67"], "sources": ["meraki-mx67-68", "meraki-lifecycle"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "3 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 3, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "1 x 1G RJ45 WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "wan"},
+        {"id": "rj45-convertible", "label": "1 x 1G RJ45 LAN / WAN port", "kind": "rj45", "port_count": 1, "speeds_gbps": [1], "role": "lan_wan", "requirements": ["Configure this convertible port as LAN or WAN as required; it cannot serve both roles at once."]}
+      ]
+    },
+    {
+      "id": "mx68", "label": "Meraki MX68", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX68"], "sources": ["meraki-mx67-68"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "10 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 10, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 1G RJ45 WAN ports", "kind": "rj45", "port_count": 2, "speeds_gbps": [1], "role": "wan"}
+      ]
+    },
+    {
+      "id": "mx68w", "label": "Meraki MX68W", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX68"], "sources": ["meraki-mx67-68"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "10 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 10, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 1G RJ45 WAN ports", "kind": "rj45", "port_count": 2, "speeds_gbps": [1], "role": "wan"}
+      ]
+    },
+    {
+      "id": "mx68cw", "label": "Meraki MX68CW", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified", "end_of_sale": "2026-11-27",
+      "matrix_families": ["MX68"], "sources": ["meraki-mx67-68", "meraki-lifecycle"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "10 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 10, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 1G RJ45 WAN ports", "kind": "rj45", "port_count": 2, "speeds_gbps": [1], "role": "wan"}
+      ]
+    },
+    {
+      "id": "mx75", "label": "Meraki MX75", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX75"], "sources": ["meraki-mx75", "meraki-accessories", "meraki-mx-wan"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "10 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 10, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 1G RJ45 WAN ports (paired)", "kind": "rj45", "port_count": 2, "speeds_gbps": [1], "role": "wan"},
+        {"id": "sfp-wan", "label": "1 x 1G SFP WAN port (paired)", "kind": "sfp", "port_count": 1, "speeds_gbps": [1], "role": "wan"}
+      ],
+      "wan_requirements": ["WAN SFP and its paired RJ45 interface are not independent active uplinks. Check interface selection and reboot requirements; MX18.2+ MultiWAN can change this behavior."]
+    },
+    {
+      "id": "mx85", "label": "Meraki MX85", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX85"], "sources": ["meraki-mx85", "meraki-accessories", "meraki-mx-wan"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "8 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-lan", "label": "2 x 1G SFP LAN ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 1G RJ45 WAN ports (paired)", "kind": "rj45", "port_count": 2, "speeds_gbps": [1], "role": "wan"},
+        {"id": "sfp-wan", "label": "2 x 1G SFP WAN ports (paired)", "kind": "sfp", "port_count": 2, "speeds_gbps": [1], "role": "wan"}
+      ],
+      "wan_requirements": ["WAN SFP and paired RJ45 interfaces share uplink activation. Normally only two WAN uplinks are active; MX18.2+ MultiWAN allows a backup. Check settings and reboot requirements."]
+    },
+    {
+      "id": "mx95", "label": "Meraki MX95", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX95"], "sources": ["meraki-mx95-105", "meraki-accessories", "meraki-mx-wan"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "4 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 4, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-lan", "label": "2 x 10G SFP+ LAN ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 2.5G RJ45 WAN ports (paired)", "kind": "rj45", "port_count": 2, "speeds_gbps": [1, 2.5], "role": "wan"},
+        {"id": "sfp-wan", "label": "2 x 10G SFP+ WAN ports (paired)", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10], "role": "wan"}
+      ],
+      "wan_requirements": ["WAN SFP+ and paired RJ45 interfaces share uplink activation. Normally only two WAN uplinks are active; MX18.2+ MultiWAN allows a backup. Check settings and reboot requirements."]
+    },
+    {
+      "id": "mx105", "label": "Meraki MX105", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX105"], "sources": ["meraki-mx95-105", "meraki-accessories", "meraki-mx-wan"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "4 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 4, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-lan", "label": "2 x 10G SFP+ LAN ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10], "role": "lan"},
+        {"id": "rj45-wan", "label": "2 x 2.5G RJ45 WAN ports (paired)", "kind": "rj45", "port_count": 2, "speeds_gbps": [1, 2.5], "role": "wan"},
+        {"id": "sfp-wan", "label": "2 x 10G SFP+ WAN ports (paired)", "kind": "sfp", "port_count": 2, "speeds_gbps": [1, 10], "role": "wan"}
+      ],
+      "wan_requirements": ["WAN SFP+ and paired RJ45 interfaces share uplink activation. Normally only two WAN uplinks are active; MX18.2+ MultiWAN allows a backup. Check settings and reboot requirements."]
+    },
+    {
+      "id": "mx250", "label": "Meraki MX250", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX250"], "sources": ["meraki-mx250", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "8 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-lan", "label": "8 x 1G SFP LAN ports", "kind": "sfp", "port_count": 8, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-plus-lan", "label": "8 x 10G SFP+ LAN ports", "kind": "sfp", "port_count": 8, "speeds_gbps": [10], "role": "lan"},
+        {"id": "sfp-wan", "label": "2 x 10G SFP+ WAN ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [10], "role": "wan"}
+      ]
+    },
+    {
+      "id": "mx450", "label": "Meraki MX450", "vendor": "Meraki", "kind": "security_appliance", "support": "not_verified",
+      "matrix_families": ["MX450"], "sources": ["meraki-mx450", "meraki-accessories"],
+      "interfaces": [
+        {"id": "rj45-lan", "label": "8 x 1G RJ45 LAN ports", "kind": "rj45", "port_count": 8, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-lan", "label": "8 x 1G SFP LAN ports", "kind": "sfp", "port_count": 8, "speeds_gbps": [1], "role": "lan"},
+        {"id": "sfp-plus-lan", "label": "8 x 10G SFP+ LAN ports", "kind": "sfp", "port_count": 8, "speeds_gbps": [10], "role": "lan"},
+        {"id": "sfp-wan", "label": "2 x 10G SFP+ WAN ports", "kind": "sfp", "port_count": 2, "speeds_gbps": [10], "role": "wan"}
+      ]
+    }
+  ]
+}

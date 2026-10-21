@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Copper and Fiber limits | OpticFinder</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="reference-page">
+    <header class="brand-header">
+      <div>
+        <p class="brand-eyebrow">OpticFinder reference</p>
+        <h1>Copper and Fiber limits</h1>
+        <p class="brand-tagline">Cable types, Ethernet speeds, and typical lengths.</p>
+      </div>
+      <nav aria-label="Connection planner">
+        <a class="nav-button" href="/"><span aria-hidden="true">&larr;</span> Back to connection planner</a>
+      </nav>
+    </header>
+    <p>A high-level cabling guide, independent of the devices available in the planner.
+      Ethernet runs over both copper and fiber. <strong>Cable type alone does not
+      determine the maximum speed or length</strong>; the Ethernet standard and
+      installed channel must also meet the requirements.</p>
+    <nav aria-label="Reference sections" class="reference-nav">
+      <a href="#copper">Copper Ethernet</a>
+      <a href="#fiber">Multimode fiber</a>
+      <a href="#single-mode">Single-mode fiber</a>
+      <a href="#installation">Installation basics</a>
+    </nav>
+
+    <section id="copper">
+      <h2>Copper Ethernet: Cat5e to Cat8</h2>
+      <p>For ordinary four-pair twisted-pair cabling, <strong>100 m is the usual
+        full-channel limit</strong>. That typically means up to 90 m of fixed
+        cabling plus 10 m of patch leads.</p>
+      <div class="reference-table">
+        <table>
+          <caption>Typical maximum channel lengths by speed and cable category</caption>
+          <thead><tr><th scope="col">Ethernet speed</th><th scope="col">Cat5e</th><th scope="col">Cat6</th><th scope="col">Cat6A</th><th scope="col">Cat7 / Class F</th><th scope="col">Cat8</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">100 Mbps</th><td>100 m</td><td>100 m</td><td>100 m</td><td>100 m</td><td>100 m</td></tr>
+            <tr><th scope="row">1 Gbps</th><td>100 m</td><td>100 m</td><td>100 m</td><td>100 m</td><td>100 m</td></tr>
+            <tr><th scope="row">2.5 Gbps</th><td>100 m*</td><td>100 m</td><td>100 m</td><td>100 m</td><td>100 m</td></tr>
+            <tr><th scope="row">5 Gbps</th><td>100 m*</td><td>100 m*</td><td>100 m</td><td>100 m</td><td>100 m</td></tr>
+            <tr><th scope="row">10 Gbps</th><td>Not specified</td><td>Up to 55 m*</td><td>100 m</td><td>100 m</td><td>100 m</td></tr>
+            <tr><th scope="row">25 Gbps / 25GBASE-T</th><td>Not specified</td><td>Not specified</td><td>Not specified</td><td>Not specified</td><td>30 m</td></tr>
+            <tr><th scope="row">40 Gbps / 40GBASE-T</th><td>Not specified</td><td>Not specified</td><td>Not specified</td><td>Not specified</td><td>30 m</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>* Existing cabling needs application-specific qualification, including
+        interference between adjacent cables. Cat6 at 10G can be limited to
+        shorter runs depending on the installation; 55 m is not guaranteed.
+        Cat6A is the straightforward choice for a new 100 m 10G channel.</p>
+      <p><strong>Cat7:</strong> An ISO/IEC category used in Class F channels,
+        not a TIA category. Full Class F performance requires appropriate
+        connectors and terminations; a cable advertised as Cat7 with ordinary
+        RJ45 plugs does not establish a Class F channel.</p>
+      <p><strong>Cat8:</strong> At 25G/40G, the limit is a 30 m channel,
+        typically 24 m of fixed cable plus 6 m of patch leads. At 10G and below,
+        a channel meeting the lower-speed application requirements can run
+        to 100 m. TIA Cat8 and ISO Cat8.1 use RJ45-compatible connectors;
+        ISO Cat8.2 uses a different connector system. Cat7 and Cat8 are shielded
+        systems and require correct shield termination.</p>
+      <p>These rows cover common BASE-T Ethernet applications, not every copper
+        technology. Direct-attach cables, single-pair Ethernet, and specialist
+        long-distance products have different limits.</p>
+    </section>
+
+    <section id="fiber">
+      <h2>Multimode fiber: OM1 to OM5</h2>
+      <p>Multimode is commonly used within buildings and data centers.
+        <strong>Higher speeds usually mean shorter runs.</strong> OM1 has a
+        62.5-micron core; OM2 through OM5 have a 50-micron core.</p>
+      <div class="reference-table">
+        <table>
+          <caption>Common Ethernet application lengths, not universal fiber-grade limits</caption>
+          <thead><tr><th scope="col">Speed / Ethernet standard</th><th scope="col">OM1</th><th scope="col">OM2</th><th scope="col">OM3</th><th scope="col">OM4</th><th scope="col">OM5</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">1G / 1000BASE-SX</th><td>275 m*</td><td>550 m</td><td>550 m baseline**</td><td>550 m baseline**</td><td>550 m baseline**</td></tr>
+            <tr><th scope="row">10G / 10GBASE-SR</th><td>33 m*</td><td>82 m</td><td>300 m</td><td>400 m</td><td>400 m</td></tr>
+            <tr><th scope="row">40G / 40GBASE-SR4</th><td>Not specified</td><td>Not specified</td><td>100 m</td><td>150 m</td><td>150 m</td></tr>
+            <tr><th scope="row">100G / 100GBASE-SR4</th><td>Not specified</td><td>Not specified</td><td>70 m</td><td>100 m</td><td>100 m</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>* OM1 figures assume 200 MHz-km modal bandwidth at 850 nm. Older
+        160 MHz-km 62.5-micron cable has shorter limits: 220 m at 1G and 26 m at 10G.</p>
+      <p>** The 550 m figure is a conservative 1G reference, not the maximum
+        capability of OM3/OM4/OM5. Longer applications require checking the
+        complete link specification.</p>
+      <p>OM5 has the same lengths as OM4 for the applications above; it is not
+        automatically longer-reaching. Other Ethernet standards can use the
+        same fiber at different lengths. For example, 100GBASE-SR10 is different
+        from the 100GBASE-SR4 row shown here.</p>
+    </section>
+
+    <section id="single-mode">
+      <h2>Single-mode fiber: OS1 and OS2</h2>
+      <p>Single-mode is commonly used for building-to-building, campus, and
+        longer-distance links. <strong>Neither OS1 nor OS2 has one universal
+        maximum Ethernet length.</strong> OS2 is commonly chosen for new
+        longer-distance installations; check the actual cable's attenuation
+        specification rather than relying on the grade name alone.</p>
+      <div class="reference-table">
+        <table>
+          <caption>Examples of standardized single-mode Ethernet application lengths</caption>
+          <thead><tr><th scope="col">Ethernet speed</th><th scope="col">Ethernet standard</th><th scope="col">Application length</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">1 Gbps</th><td>1000BASE-LX</td><td>5 km</td></tr>
+            <tr><th scope="row">10 Gbps</th><td>10GBASE-LR</td><td>10 km</td></tr>
+            <tr><th scope="row">10 Gbps</th><td>10GBASE-ER</td><td>40 km</td></tr>
+            <tr><th scope="row">40 Gbps</th><td>40GBASE-LR4</td><td>10 km</td></tr>
+            <tr><th scope="row">100 Gbps</th><td>100GBASE-LR4</td><td>10 km</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>These are application examples, not a promise that any OS1 or OS2 cable
+        will work at those lengths. The entire channel must meet the selected
+        standard's loss requirements. Other standards support shorter or longer
+        distances on single-mode fiber.</p>
+    </section>
+
+    <section id="installation">
+      <h2>Installation basics</h2>
+      <ul>
+        <li><strong>Measure the entire channel.</strong> Include patch leads,
+          patch panels, and the actual cable route, not the straight-line distance.</li>
+        <li><strong>Length is not the only limit.</strong> Connectors, splices,
+          bends, damage, and interference can prevent an otherwise short-enough
+          channel from meeting its Ethernet requirements.</li>
+        <li><strong>Check the cable markings and test results.</strong> Jacket
+          color alone does not reliably identify fiber grade or cable category.</li>
+        <li><strong>Match the full application.</strong> Both ends must support
+          the same Ethernet standard. Fiber count and connector arrangement also
+          need to suit that application.</li>
+      </ul>
+      <p>This alpha reference is simplified and may contain inaccuracies.
+        It does not certify an installed channel or change the planner's
+        device-specific connection rules. Management and stacking ports remain
+        excluded from link planning.</p>
+    </section>
+
+    <details id="technical-details">
+      <summary>Source documentation</summary>
+      <p>Reference reviewed October 20, 2026. Use these application and cabling
+        references for detailed requirements; no product part list is needed to
+        read the tables above.</p>
+      <ul>
+        <li><a href="https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/catalyst-multigigabit-switching/nb-06-transform-multigigabit-wp-cte-en.html" rel="noreferrer">Cisco Multigigabit Ethernet cabling guide</a> &mdash; copper categories, speeds, and channel lengths.</li>
+        <li><a href="https://www.flukenetworks.com/knowledge-base/dtx-cableanalyzer/class-f-dtx-cableanalyzer" rel="noreferrer">Fluke Networks Class F cabling guide</a> &mdash; Cat7 classification and connector requirements.</li>
+        <li><a href="https://www.flukenetworks.com/knowledge-base/applicationstandards-articles-copper/category-8-cabling-fact-sheet" rel="noreferrer">Fluke Networks Cat8 fact sheet</a> &mdash; 25G/40G lengths, lower-speed operation, and connector variants.</li>
+        <li><a href="https://www.flukenetworks.com/knowledge-base/copper-testing/om1-om2-om3-om4-om5-and-os1-os2-fiber" rel="noreferrer">Fluke Networks fiber grades and Ethernet applications</a> &mdash; multimode lengths, legacy fiber bandwidth, and loss requirements.</li>
+        <li><a href="https://www.thefoa.org/tech/Linkspec.htm" rel="noreferrer">Fiber Optic Association network specifications</a> &mdash; Ethernet application examples, including 100GBASE-SR4 and single-mode lengths.</li>
+      </ul>
+    </details>
+    <footer class="brand-footer">
+      <p><a class="nav-button" href="/"><span aria-hidden="true">&larr;</span> Back to connection planner</a></p>
+      Independent prototype &mdash; not an official Cisco tool or endorsed by Cisco.
+      Cisco and Meraki are trademarks of their respective owners.
+    </footer>
+  </main>
+</body>
+</html>

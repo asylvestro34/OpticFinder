@@ -36,6 +36,7 @@ If the port is occupied, add `--port 8766` to the serve command.
 Restart after Python code changes; refresh the browser after UI changes.
 
 The development server is local-only. Do not expose it directly to the internet.
+For a Raspberry Pi hosted behind HTTPS, see [the deployment guide](deploy/README.md).
 
 ## How to use it
 

@@ -1,13 +1,8 @@
 """Development server, intentionally restricted to this machine."""
 
-import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 
-from .engine import load_catalog, plan
-from .matrix import load_matrix
-
-MAX_BODY = 8192
+from .web import MAX_BODY, SECURITY_HEADERS, get_response, json_response, plan_response
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -19,15 +14,13 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy",
-                         "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        for name, value in SECURITY_HEADERS:
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 
     def _json(self, status: int, value: dict) -> None:
-        self._send(status, json.dumps(value, allow_nan=False).encode(), "application/json")
+        self._send(*json_response(status, value))
 
     def _local_request(self) -> bool:
         expected = f"127.0.0.1:{self.server.server_port}"
@@ -43,22 +36,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if not self._local_request():
             return
-        if self.path == "/api/catalog":
-            self._json(200, load_catalog())
-        elif self.path == "/api/matrix":
-            self._json(200, load_matrix())
-        elif self.path == "/health":
-            self._json(200, {"status": "ok"})
-        elif self.path in {"/", "/limitations", "/app.js", "/style.css"}:
-            filename, content_type = {
-                "/": ("index.html", "text/html; charset=utf-8"),
-                "/limitations": ("limitations.html", "text/html; charset=utf-8"),
-                "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-                "/style.css": ("style.css", "text/css; charset=utf-8"),
-            }[self.path]
-            self._send(200, Path(__file__).with_name(filename).read_bytes(), content_type)
-        else:
-            self._json(404, {"error": "Not found."})
+        self._send(*get_response(self.path))
 
     def do_POST(self) -> None:
         self.close_connection = True
@@ -85,14 +63,14 @@ class Handler(BaseHTTPRequestHandler):
             data = self.rfile.read(length)
             if len(data) != length:
                 raise ValueError("Incomplete request body.")
-            result = plan(json.loads(data))
+            response = plan_response(data)
         except (ValueError, UnicodeDecodeError) as exc:
             self._json(400, {"error": str(exc)})
             return
         except TimeoutError:
             self._json(408, {"error": "Request body timed out."})
             return
-        self._json(200, result)
+        self._send(*response)
 
 
 def serve_local(port: int) -> None:

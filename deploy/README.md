@@ -1,185 +1,159 @@
-# Raspberry Pi public deployment
+# Raspberry Pi deployment with ngrok
 
-For Debian 13 ARM64, Python 3.13, Pi `192.168.10.51`, and
-`opticfinder.ddns.net`. Uses Debian-packaged Gunicorn, Nginx, Certbot, and
-systemd. The local development server is not used.
+The current deployment runs on Debian 13 ARM64 at `192.168.10.51`:
 
-Run the commands below on the Pi in Bash. Do not run them in Windows PowerShell.
-Keep the existing `/mnt/techpulse/app` service and its configuration unchanged.
-Deployment files must first be available in the GitHub repository you clone.
+**https://overkill-trustee-conjuror.ngrok-free.dev**
 
-## 1. Network prerequisites
+Traffic flows through ngrok's HTTPS endpoint to Nginx on `127.0.0.1:8080`,
+then Gunicorn on `127.0.0.1:8765`. Both local listeners stay private.
+No No-IP record, router port forwarding, or local TLS certificate is needed.
+The free ngrok plan displays a browser warning and has usage limits.
 
-- Reserve `192.168.10.51` for the Pi in UniFi's DHCP/client settings.
-- Confirm the Dream Machine has a public WAN IPv4 address. Private WAN addresses
-  or `100.64.0.0/10` can indicate upstream NAT/CGNAT; resolve that with the ISP.
-- Create the No-IP hostname and configure No-IP DDNS on the Dream Machine's WAN.
-  Use dedicated DDNS credentials where available. Do not store them in this repo.
-- The hostname's A record must resolve to your public WAN IPv4. Do not publish an
-  AAAA record unless you separately configure and secure IPv6 access.
-- Confirm inbound TCP 80/443 are permitted by the ISP and are not already
-  forwarded to another device.
-- Keep the Pi patched. Prefer an isolated VLAN with restricted access to your
-  private LAN; account for the existing service's needs before changing networks.
+Run these commands on the Pi in Bash, not Windows PowerShell. These are rebuild
+instructions; the live Pi is already configured. Leave `/mnt/techpulse/app`,
+other services, and existing firewall rules unchanged. Change default passwords
+before publishing the site, and keep the OS patched.
 
-Do not forward SSH, RPC, remote desktop, Docker services, or port 8765. Do not
-use the router's DMZ-host feature. Public access here is anonymous and read-only
-apart from stateless planning requests; there are no accounts or saved plans.
+For No-IP, port forwarding, and locally managed certificates instead, see
+[direct hosting](DIRECT-HOSTING.md).
 
-## 2. Install in a separate directory
+## 1. Install the application and ngrok
 
-First inspect existing services; if 80, 443, or 8765 is occupied, stop and resolve
-the conflict without killing the other service.
+Inspect existing paths, accounts, and listeners before installing anything.
+If a path/account below already exists or ports 8080/8765 are occupied, stop and
+inspect it rather than overwriting or stopping another service.
 
 ```bash
 sudo ss -lntup
 sudo apt update
-sudo apt install git python3 gunicorn nginx certbot
-```
-
-If `/opt/opticfinder` already exists, inspect it instead of overwriting it.
-Otherwise:
-
-```bash
+sudo apt install git python3 gunicorn nginx
 sudo git clone https://github.com/asylvestro34/OpticFinder.git /opt/opticfinder
 sudo useradd --system --user-group --no-create-home --shell /usr/sbin/nologin opticfinder
-sudo -u opticfinder /usr/bin/python3 -c 'import sys; sys.path.insert(0, "/opt/opticfinder"); from opticfinder.engine import load_catalog; print(len(load_catalog()["endpoints"]))'
+sudo useradd --system --user-group --no-create-home --shell /usr/sbin/nologin opticfinder-ngrok
 ```
 
-Expected output: `37`. If the account already exists, inspect it before reusing
-it; do not recreate it or change an unrelated service account.
-The source stays administrator-owned; the backend account cannot modify it.
-No virtual environment or global pip install is needed for this Debian deployment.
-
-## 3. Start the localhost backend
+Install the Linux ARM64 agent using the official
+[ngrok download instructions](https://ngrok.com/download/linux). This deployment
+expects the executable at `/usr/local/bin/ngrok`. Confirm with:
 
 ```bash
-sudo install -m 644 /opt/opticfinder/deploy/opticfinder.service /etc/systemd/system/opticfinder.service
+/usr/local/bin/ngrok version
+```
+
+The source remains administrator-owned; neither service account can modify it.
+No global pip install or Python virtual environment is needed.
+
+## 2. Save the token privately
+
+Create an ngrok account and obtain its authtoken from **Credentials > Authtokens**.
+Run as your normal Pi login user. The hidden prompt keeps the token out of shell
+history; do not paste tokens into Git, logs, or chat.
+
+```bash
+read -rsp 'Ngrok authtoken: ' NGROK_TOKEN; echo
+ngrok config add-authtoken "$NGROK_TOKEN"
+unset NGROK_TOKEN
+chmod 600 ~/.config/ngrok/ngrok.yml
+sudo install -d -o root -g opticfinder-ngrok -m 750 /etc/opticfinder-ngrok
+sudo install -o root -g opticfinder-ngrok -m 640 \
+  ~/.config/ngrok/ngrok.yml /etc/opticfinder-ngrok/ngrok.yml
+sudo -u opticfinder-ngrok /usr/local/bin/ngrok config check \
+  --config=/etc/opticfinder-ngrok/ngrok.yml
+```
+
+Only the token-bearing configuration stays outside the repository. The tunnel
+runs under its own unprivileged account with request inspection disabled.
+
+## 3. Install the services and localhost proxy
+
+The three `ngrok`/`tunnel` files below use the current assigned hostname.
+For another ngrok account, replace that hostname in all three files with the
+one shown under **Domains** in your dashboard before installing them.
+The backend origin must match the public HTTPS URL exactly.
+
+```bash
+cd /opt/opticfinder
+sudo -u opticfinder python3 -B -m unittest discover -s tests -q
+sudo install -m 644 deploy/opticfinder.service /etc/systemd/system/opticfinder.service
+sudo install -d -m 755 /etc/systemd/system/opticfinder.service.d
+sudo install -m 644 deploy/opticfinder.ngrok-origin.conf \
+  /etc/systemd/system/opticfinder.service.d/origin.conf
+sudo install -m 644 deploy/opticfinder.tunnel.conf /etc/nginx/sites-available/opticfinder-tunnel
+sudo ln -s /etc/nginx/sites-available/opticfinder-tunnel /etc/nginx/sites-enabled/opticfinder-tunnel
+sudo install -m 644 deploy/opticfinder-ngrok.service /etc/systemd/system/opticfinder-ngrok.service
+sudo nginx -t
+sudo systemd-analyze verify /etc/systemd/system/opticfinder-ngrok.service
 sudo systemctl daemon-reload
-sudo systemctl enable --now opticfinder
-sudo systemctl status opticfinder --no-pager
-curl --fail -H 'Host: opticfinder.ddns.net' http://127.0.0.1:8765/health
+sudo systemctl enable --now opticfinder nginx
+sudo systemctl reload nginx
+curl --fail -H 'Host: overkill-trustee-conjuror.ngrok-free.dev' http://127.0.0.1:8080/health
 ```
 
-Expected JSON: `{"status": "ok"}`. The backend listens only on `127.0.0.1:8765`.
-Service errors: `sudo journalctl -u opticfinder -n 50 --no-pager`.
-
-## 4. Prepare HTTP certificate validation
-
-These are dedicated site files, not replacements for the global Nginx config.
-If an `opticfinder` site/service/snippet already exists, inspect it before
-installing these files. Leave other sites and services unchanged.
+Stop if validation or the local health request fails. Expected JSON:
+`{"status": "ok"}`. Then publish:
 
 ```bash
-sudo install -d -m 755 /var/www/opticfinder-acme
-sudo install -m 644 /opt/opticfinder/deploy/opticfinder.nginx.conf /etc/nginx/sites-available/opticfinder
-sudo install -m 644 /opt/opticfinder/deploy/opticfinder.proxy.conf /etc/nginx/snippets/opticfinder.proxy.conf
-sudo ln -s /etc/nginx/sites-available/opticfinder /etc/nginx/sites-enabled/opticfinder
-sudo nginx -t && sudo systemctl enable --now nginx && sudo systemctl reload nginx
+sudo systemctl enable --now opticfinder-ngrok
+sudo systemctl status opticfinder-ngrok --no-pager
 ```
 
-The bootstrap site intentionally returns HTTP 503 except for certificate
-validation. It does not expose the backend over unencrypted HTTP.
-Nginx's packaged default site can remain; the named site handles this hostname.
+Nginx caps bodies at 8KB, with an aggregate limit of 5 requests/second,
+a burst of 30, and 10 concurrent proxied connections across all visitors.
+These conservative limits are shared, not per visitor: the local tunnel is the
+proxy's client. Client-supplied forwarding headers are not trusted for limiting.
+They reduce casual abuse, not large-scale DDoS.
 
-## 5. Configure the Dream Machine and host firewall
+The earlier direct-hosting bootstrap and packaged Nginx default site may still
+listen on port 80 on the existing Pi; neither is used by this tunnel.
+Do not open or forward ports 80, 443, 8080, 8765, SSH, or other Pi services for
+this deployment. Do not reset the host firewall or stop shared Nginx.
 
-Add only these two forwards:
-
-| WAN port | Protocol | Forward IP | Forward port |
-|---|---|---|---|
-| 80 | TCP | 192.168.10.51 | 80 |
-| 443 | TCP | 192.168.10.51 | 443 |
-
-UniFi Network 9.4: Settings > Policy Engine > Port Forwarding.
-Network 9.3: Settings > Policy Table > Create New Policy > Port Forwarding.
-Other versions may place this under routing/firewall settings.
-Choose the correct WAN and allow any source for an anonymous public site.
-
-If the Pi has an active host firewall, allow inbound TCP 80/443 using the
-existing firewall manager. Do not flush nftables/iptables, reset UFW, or enable
-a new firewall blindly: the Pi also runs SSH, remote desktop, RPC, and Docker.
-Preserve LAN administration, allow return traffic and outbound DNS/HTTPS, and
-do not open those other services to the internet. IPv6 needs its own policy.
-
-Verify DNS from an external resolver and test from cellular data, not just Wi-Fi.
-No-IP does not bypass CGNAT or blocked ISP ports. Free No-IP hostnames may need
-periodic confirmation depending on your plan.
-
-## 6. Issue the certificate and activate HTTPS
-
-Replace the example email with your real certificate contact email:
+## 4. Check the public site
 
 ```bash
-sudo certbot certonly --webroot -w /var/www/opticfinder-acme \
-  --cert-name opticfinder.ddns.net -d opticfinder.ddns.net \
-  --email YOUR_EMAIL@example.com --agree-tos
-```
-
-Only after certificate issuance succeeds:
-
-```bash
-sudo install -m 644 /opt/opticfinder/deploy/opticfinder.https.conf /etc/nginx/sites-available/opticfinder
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-This enables HTTPS and HTTP-to-HTTPS redirects. Request bodies are capped at 8KB;
-per-IP requests are limited to 5/second with a burst of 30, and 10 concurrent
-proxied connections. These limits reduce casual abuse, not large-scale DDoS.
-Users sharing a public IP share these limits.
-
-Set up Nginx reloads after certificate renewal:
-
-```bash
-sudo install -d -m 755 /etc/letsencrypt/renewal-hooks/deploy
-printf '%s\n' '#!/bin/sh' '/usr/sbin/nginx -t && /usr/bin/systemctl reload nginx' \
-  | sudo tee /etc/letsencrypt/renewal-hooks/deploy/opticfinder-reload-nginx >/dev/null
-sudo chmod 755 /etc/letsencrypt/renewal-hooks/deploy/opticfinder-reload-nginx
-sudo systemctl enable --now certbot.timer
-sudo certbot renew --dry-run
-```
-
-Keep TCP 80 available for renewal. Certificates and keys stay under
-`/etc/letsencrypt`, never in Git.
-
-## 7. Check the public site
-
-```bash
-curl --fail https://opticfinder.ddns.net/health
-curl --fail https://opticfinder.ddns.net/api/plan \
+curl --fail -H 'ngrok-skip-browser-warning: true' \
+  https://overkill-trustee-conjuror.ngrok-free.dev/health
+curl --fail https://overkill-trustee-conjuror.ngrok-free.dev/api/plan \
+  -H 'ngrok-skip-browser-warning: true' \
   -H 'Content-Type: application/json' \
-  -H 'Origin: https://opticfinder.ddns.net' \
+  -H 'Origin: https://overkill-trustee-conjuror.ngrok-free.dev' \
   --data '{"endpoint_a":"ms130-24x","endpoint_b":"ms130-24x","interface_a":"sfp-uplink","interface_b":"sfp-uplink","speed_gbps":10,"distance_m":30,"cable_type":"OM3"}'
 ```
 
-From a phone with Wi-Fi disabled, open `https://opticfinder.ddns.net`, check a
-connection, and visit the reference page. A homepage alone is not enough to
-verify the API. During a maintenance window, reboot the Pi and confirm both
-OpticFinder and the pre-existing service recover.
+From a phone on cellular data, open the site, continue past ngrok's warning,
+check a connection, and visit the cable reference page. The request-header
+workaround above is for command-line clients; the app cannot remove the initial
+browser warning. Ngrok requires a paid plan to remove it for normal visitors.
+During a maintenance window, reboot and confirm this app and the existing
+service recover.
 
-Troubleshooting:
-- `sudo journalctl -u opticfinder -n 50 --no-pager`
-- `sudo tail -n 50 /var/log/nginx/error.log`
-- `sudo nginx -t`
-- `sudo ss -lntp` (backend must remain on localhost)
-
-## Updates and rollback
-
-Keep OS packages updated using your existing maintenance policy. For app updates:
+## Updates and troubleshooting
 
 ```bash
 cd /opt/opticfinder
 sudo git status --short
 sudo git pull --ff-only
-sudo -u opticfinder /usr/bin/python3 -B -m unittest discover -s tests -q
+sudo -u opticfinder python3 -B -m unittest discover -s tests -q
 sudo systemctl restart opticfinder
-curl --fail -H 'Host: opticfinder.ddns.net' http://127.0.0.1:8765/health
+curl --fail -H 'Host: overkill-trustee-conjuror.ngrok-free.dev' http://127.0.0.1:8080/health
 ```
 
-Stop if the pull or tests fail. Review deployment-file changes separately; a
-pull does not reinstall systemd/Nginx configuration. For a quick public-access
-rollback, disable the two OpticFinder port-forwarding rules on the Dream Machine.
-Do not stop shared Nginx or change the other Pi service.
+Stop if the worktree has unexpected edits, the pull fails, or tests fail.
+A pull does not reinstall service/proxy files. Review those changes separately,
+validate Nginx/systemd configuration, reload systemd, and restart/reload only
+affected services. Maintain the ngrok agent using its official update procedure.
 
-If changing the hostname, update the service origin, both site configs, and
-certificate paths, issue a certificate for the new name, then validate and reload.
+Inspect service status with `sudo systemctl status opticfinder opticfinder-ngrok nginx --no-pager`
+and logs with `sudo journalctl -u opticfinder -u opticfinder-ngrok -n 50 --no-pager`.
+Do not share logs/configuration without checking for secrets.
+Use `sudo nginx -t` and `sudo ss -lntp` to check the proxy and loopback listeners.
+
+To remove public access without disturbing other services:
+
+```bash
+sudo systemctl disable --now opticfinder-ngrok
+```
+
+To rotate the token, revoke it in ngrok, repeat the private token installation,
+and restart `opticfinder-ngrok`. For a hostname change, update the origin
+override, tunnel unit, and Nginx tunnel site together before restarting.

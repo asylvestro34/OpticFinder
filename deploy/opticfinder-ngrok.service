@@ -1,0 +1,28 @@
+[Unit]
+Description=OpticFinder ngrok HTTPS tunnel
+Wants=network-online.target
+After=network-online.target nginx.service opticfinder.service
+Requires=nginx.service opticfinder.service
+
+[Service]
+Type=simple
+User=opticfinder-ngrok
+Group=opticfinder-ngrok
+ExecStart=/usr/local/bin/ngrok http http://127.0.0.1:8080 --url=https://overkill-trustee-conjuror.ngrok-free.dev --config=/etc/opticfinder-ngrok/ngrok.yml --inspect=false --log=stdout --log-format=json
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+UMask=0077
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

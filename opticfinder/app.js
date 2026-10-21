@@ -7,6 +7,10 @@ const compatibilityMessage = document.querySelector("#compatibility");
 let catalog;
 let submitting = false;
 
+function devicesOnly() {
+  return form.elements.namedItem("mode")?.value === "devices";
+}
+
 async function getJSON(url, options) {
   const response = await fetch(url, options);
   const body = await response.json();
@@ -51,6 +55,7 @@ async function initialize() {
     document.querySelector("#cable-family").addEventListener("change", updateCableGrades);
     form.elements.namedItem("cable_type").addEventListener("change", updateSubmitState);
     form.elements.namedItem("distance_m").addEventListener("input", updateSubmitState);
+    form.elements.namedItem("mode").addEventListener("change", updatePlanningOptions);
     updatePlanningOptions();
   } catch (err) {
     error.textContent = `Unable to load catalog: ${err.message}`;
@@ -89,13 +94,25 @@ function profilesForSelection() {
 function updatePlanningOptions() {
   document.querySelector("#result").hidden = true;
   error.textContent = "";
+  const browse = devicesOnly();
+  button.textContent = browse ? "Show all options" : "Check connection";
   selectedInterfaces().forEach(({endpoint, selectedInterface}, index) => {
+    const suffix = index === 0 ? "a" : "b";
+    document.querySelector(`#port-field-${suffix}`).hidden = browse;
+    form.elements.namedItem(`interface_${suffix}`).disabled = browse || !endpoint;
     document.querySelector(`#device-notes-${index === 0 ? "a" : "b"}`).textContent = [
       ...(endpoint?.end_of_sale ? [`Published end of sale: ${endpoint.end_of_sale}.`] : []),
-      ...(selectedInterface?.requirements || []),
-      ...(selectedInterface?.role === "wan" ? (endpoint.wan_requirements || []) : []),
+      ...(!browse ? (selectedInterface?.requirements || []) : []),
+      ...(!browse && selectedInterface?.role === "wan" ? (endpoint.wan_requirements || []) : []),
     ].join(" ");
   });
+  if (browse) {
+    requirements.hidden = true;
+    requirements.disabled = true;
+    compatibilityMessage.textContent = "Choose a device at each end. No port or cable inputs needed.";
+    updateSubmitState();
+    return;
+  }
   const speedSelect = form.elements.namedItem("speed_gbps");
   const cableSelect = form.elements.namedItem("cable_type");
   const profiles = profilesForSelection();
@@ -156,6 +173,12 @@ function updateCableGrades() {
 
 function updateSubmitState() {
   document.querySelector("#result").hidden = true;
+  if (devicesOnly()) {
+    button.disabled = submitting || !["endpoint_a", "endpoint_b"].every(
+      (field) => form.elements.namedItem(field).value
+    );
+    return;
+  }
   button.disabled = submitting || !form.elements.namedItem("speed_gbps").value
     || !form.elements.namedItem("cable_type").value
     || !form.elements.namedItem("distance_m").value
@@ -170,6 +193,8 @@ function textElement(tag, text, className) {
 }
 
 function renderResult(result) {
+  const request = result.request;
+  const browse = request.mode === "devices";
   const hasMatches = result.candidates.length > 0;
   document.querySelector("#status").textContent = hasMatches
     ? `${result.candidates.length === 1 ? "Connection option" : `${result.candidates.length} connection options`} found`
@@ -177,17 +202,26 @@ function renderResult(result) {
   document.querySelector("#message").textContent = hasMatches
     ? "Matches the documented catalog for your selections."
     : "No option in the current catalog meets these selections. "
-      + (result.exclusions[0] || "Try a different speed, cable type, or length.");
-  const request = result.request;
+      + (result.exclusions[0] || (browse
+        ? "This does not prove a connection is impossible; check the public vendor documentation."
+        : "Try a different speed, cable type, or length."));
   const cableType = request.cable_type || request.fiber;
   document.querySelector("#connection-summary").textContent =
-    `${request.speed_gbps} Gbps | ${cableType} | ${request.distance_m} m required`;
+    browse ? "All catalog options | No cable length or installed link has been checked"
+      : `${request.speed_gbps} Gbps | ${cableType} | ${request.distance_m} m required`;
+  if (browse && hasMatches) {
+    document.querySelector("#message").textContent =
+      "Catalog-supported alternatives, not a validated link. Choose one port option at each end "
+      + "and a listed cable grade; verify the route length and installation requirements.";
+  }
   const candidateContainer = document.querySelector("#candidates");
   candidateContainer.replaceChildren();
   for (const candidate of result.candidates) {
     const article = document.createElement("article");
     article.className = "connection-option";
-    article.append(textElement("h3", candidate.standard));
+    article.append(textElement("h3", browse
+      ? `${candidate.speed_gbps} Gbps | ${candidate.cable === "RJ45" ? "Copper Ethernet" : candidate.standard}`
+      : candidate.standard));
     const endpoints = document.createElement("div");
     endpoints.className = "result-endpoints";
     const parts = new Map();
@@ -196,6 +230,7 @@ function renderResult(result) {
       const card = document.createElement("div");
       card.className = "result-device";
       card.append(textElement("h4", label), textElement("p", endpoint.label, "device-name"));
+      if (browse) card.append(textElement("p", "Choose one port option:", "port-description"));
       for (const option of candidate.endpoint_connection_options[field]) {
         const description = option.connection === "direct_attach"
           ? "Integrated DAC connector"
@@ -209,17 +244,33 @@ function renderResult(result) {
       endpoints.append(card);
     }
     article.append(endpoints);
-    article.append(textElement("p", candidate.assembly_part
+    article.append(textElement("p", candidate.assembly_options
+      ? "Parts needed: choose one integrated DAC assembly below. No separate optics needed."
+      : candidate.assembly_part
       ? `Parts needed: 1 x ${candidate.assembly_part} (${candidate.assembly_length_m} m integrated cable). No separate optics needed.`
+      : browse
+        ? "Parts needed: one listed transceiver per chosen pluggable port; none for native RJ45. Add one listed cable."
       : parts.size
         ? `Parts needed: ${[...parts].map(([part, quantity]) => `${quantity} x ${part}`).join(", ")}, plus the cable below.`
         : "No transceivers needed. Use the cable below.",
     "parts-summary"));
-    article.append(textElement("p", candidate.assembly_part
+    article.append(textElement("p", browse
+      ? candidate.assembly_options
+        ? `Available fixed-length assemblies: ${candidate.assembly_options
+          .map((assembly) => `${assembly.length_m} m (${assembly.part})`).join(" | ")}`
+        : candidate.assembly_part
+        ? `Fixed assembly length: ${candidate.assembly_length_m} m`
+        : `Cable grade and max length: ${Object.entries(candidate.cable_options)
+          .map(([grade, reach]) => `${grade}: ${reach} m`).join(" | ")}`
+      : candidate.assembly_part
       ? `Required route: ${request.distance_m} m | Assembly length: ${candidate.assembly_length_m} m`
       : `Cable: ${cableType} | Selected length: ${request.distance_m} m | Max length: ${candidate.documented_profile_reach_m} m`,
     "cable-summary"));
-    if (!candidate.assembly_part) {
+    if (browse && candidate.minimum_distance_m) {
+      article.append(textElement("p", `Minimum cable length: ${candidate.minimum_distance_m} m`,
+        "connection-requirement"));
+    }
+    if (!candidate.assembly_part && !candidate.assembly_options) {
       article.append(textElement("p", candidate.cable, "port-description"));
     }
     for (const requirement of candidate.requirements) {
@@ -246,6 +297,19 @@ function renderResult(result) {
   document.querySelector("#json").textContent = JSON.stringify(result, null, 2);
 }
 
+function planningRequest() {
+  if (devicesOnly()) {
+    return {
+      mode: "devices",
+      endpoint_a: form.elements.namedItem("endpoint_a").value,
+      endpoint_b: form.elements.namedItem("endpoint_b").value,
+    };
+  }
+  const request = Object.fromEntries(new FormData(form));
+  delete request.mode;
+  return request;
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   error.textContent = "";
@@ -253,14 +317,17 @@ form.addEventListener("submit", async (event) => {
   submitting = true;
   button.disabled = true;
   let completed = false;
+  const body = JSON.stringify(planningRequest());
   try {
     const result = await getJSON("/api/plan", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      body,
     });
-    renderResult(result);
-    completed = true;
+    if (body === JSON.stringify(planningRequest())) {
+      renderResult(result);
+      completed = true;
+    }
   } catch (err) {
     error.textContent = err.message;
   } finally {

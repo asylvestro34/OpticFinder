@@ -1,6 +1,7 @@
-"""Development server, intentionally restricted to this machine."""
+"""Development server bound to an explicit local IPv4 address."""
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from ipaddress import IPv4Address
 
 from .web import MAX_BODY, SECURITY_HEADERS, get_response, json_response, plan_response
 
@@ -23,9 +24,9 @@ class Handler(BaseHTTPRequestHandler):
         self._send(*json_response(status, value))
 
     def _local_request(self) -> bool:
-        expected = f"127.0.0.1:{self.server.server_port}"
+        expected = f"{self.server.server_address[0]}:{self.server.server_port}"
         if self.headers.get("Host") != expected:
-            self._json(403, {"error": "Use the printed http://127.0.0.1 URL."})
+            self._json(403, {"error": f"Use the printed http://{expected} URL."})
             return False
         origin = self.headers.get("Origin")
         if origin is not None and origin != f"http://{expected}":
@@ -73,9 +74,12 @@ class Handler(BaseHTTPRequestHandler):
         self._send(*response)
 
 
-def serve_local(port: int) -> None:
-    with ThreadingHTTPServer(("127.0.0.1", port), Handler) as server:
-        print(f"OpticFinder: http://127.0.0.1:{server.server_port} (local development only)", flush=True)
+def serve_local(port: int, host: str = "127.0.0.1") -> None:
+    address = IPv4Address(host)
+    if address.is_unspecified or address.is_multicast:
+        raise ValueError("Use a specific local IPv4 address, not a wildcard or multicast address.")
+    with ThreadingHTTPServer((str(address), port), Handler) as server:
+        print(f"OpticFinder: http://{address}:{server.server_port} (local development only)", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

@@ -8,10 +8,11 @@ class Element {
   constructor() {
     this.children = [];
     this.textContent = "";
+    this.listeners = new Map();
   }
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children = children; }
-  addEventListener() {}
+  addEventListener(name, callback) { this.listeners.set(name, callback); }
   get text() {
     return this.textContent + this.children.map((child) =>
       typeof child === "string" ? child : child.text
@@ -237,6 +238,168 @@ function result(parts = ["MA-SFP-1GB-SX", "MA-SFP-1GB-SX"], changes = {}) {
     ...changes,
   };
 }
+
+function deviceFields(page) {
+  const fields = Object.fromEntries(
+    ["mode", "endpoint_a", "endpoint_b", "interface_a", "interface_b",
+      "speed_gbps", "cable_type", "distance_m"].map(name => [name, new Element()])
+  );
+  fields.mode.value = "devices";
+  fields.endpoint_a.value = "a";
+  fields.endpoint_b.value = "b";
+  fields.interface_a.value = fields.interface_b.value = "";
+  page.element("#planner").elements = {namedItem: name => fields[name]};
+  vm.runInContext(`catalog = {
+    endpoints: ["a", "b"].map(id => ({id, label: id, interfaces: [
+      {id: "port", label: "SFP", kind: "sfp", speeds_gbps: [1, 10]}
+    ]})), connection_profiles: [], cable_types: []
+  };`, page.context);
+  return fields;
+}
+
+test("device-only mode requires only devices and hides/disables detailed fields", () => {
+  const page = dashboard();
+  const fields = deviceFields(page);
+  vm.runInContext("updatePlanningOptions()", page.context);
+  assert.equal(page.element("#link-requirements").hidden, true);
+  assert.equal(page.element("#link-requirements").disabled, true);
+  assert.equal(page.element("#port-field-a").hidden, true);
+  assert.equal(page.element("#port-field-b").hidden, true);
+  assert.equal(fields.interface_a.disabled, true);
+  assert.equal(fields.interface_b.disabled, true);
+  assert.equal(vm.runInContext("button.disabled", page.context), false);
+  fields.endpoint_b.value = "";
+  vm.runInContext("updateSubmitState()", page.context);
+  assert.equal(vm.runInContext("button.disabled", page.context), true);
+  fields.endpoint_b.value = "b";
+  fields.mode.value = "detailed";
+  vm.runInContext("updatePlanningOptions()", page.context);
+  assert.equal(page.element("#port-field-a").hidden, false);
+  assert.equal(fields.interface_a.disabled, false);
+  assert.equal(vm.runInContext("button.disabled", page.context), true);
+  fields.mode.value = "devices";
+  vm.runInContext("updatePlanningOptions()", page.context);
+  assert.equal(vm.runInContext("button.disabled", page.context), false);
+});
+
+test("device-only serialization omits stale detailed filters and never assumes a length", () => {
+  const page = dashboard();
+  const fields = deviceFields(page);
+  fields.speed_gbps.value = "10";
+  fields.cable_type.value = "DAC";
+  fields.distance_m.value = "30";
+  assert.deepEqual(JSON.parse(vm.runInContext("JSON.stringify(planningRequest())", page.context)), {
+    mode: "devices", endpoint_a: "a", endpoint_b: "b",
+  });
+  fields.mode.value = "detailed";
+  const detailed = {
+    endpoint_a: "a", endpoint_b: "b", interface_a: "port", interface_b: "port",
+    speed_gbps: "10", cable_type: "DAC", distance_m: "30",
+  };
+  page.context.FormData = class {
+    constructor() { return Object.entries({mode: "detailed", ...detailed}); }
+  };
+  assert.deepEqual(
+    JSON.parse(vm.runInContext("JSON.stringify(planningRequest())", page.context)), detailed
+  );
+});
+
+test("device-only cards show alternative ports, cable limits and conditional requirements", () => {
+  const page = dashboard();
+  const data = result();
+  data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+  Object.assign(data.candidates[0], {
+    speed_gbps: 10, cable: "Duplex LC", cable_options: {OM3: 300, OM4: 400},
+    minimum_distance_m: 2, requirements: ["Device A (WAN): Check paired WAN activation."],
+  });
+  data.candidates[0].endpoint_connection_options.endpoint_a.push({
+    interface_label: "Alternative SFP ports", part: "MA-SFP-10GB-SR", connection: "transceiver",
+  });
+  page.render(data);
+  assert.match(page.element("#candidates").text, /10 Gbps/);
+  assert.match(page.element("#candidates").text, /Choose one port option:.*Alternative SFP ports/);
+  assert.match(page.element("#candidates").text, /OM3: 300 m.*OM4: 400 m/);
+  assert.match(page.element("#candidates").text, /Minimum cable length: 2 m/);
+  assert.match(page.element("#candidates").text, /WAN.*paired WAN/);
+  assert.doesNotMatch(page.element("#candidates").text, /3 x|Selected length|undefined/);
+  assert.match(page.element("#connection-summary").text, /No cable length/);
+});
+
+test("device-only DAC cards show fixed length without implying a route was checked", () => {
+  const page = dashboard();
+  const data = result([null, null]);
+  data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+  Object.assign(data.candidates[0], {
+    speed_gbps: 10, cable_options: {DAC: 3}, assembly_options: [
+      {part: "MA-CBL-TA-1M", length_m: 1}, {part: "MA-CBL-TA-3M", length_m: 3},
+    ],
+  });
+  page.render(data);
+  assert.equal(page.element("#status").text, "Connection option found");
+  assert.equal(page.element("#candidates").children.length, 1);
+  assert.match(page.element("#candidates").text, /choose one integrated DAC assembly/);
+  assert.match(page.element("#candidates").text, /1 m \(MA-CBL-TA-1M\).*3 m \(MA-CBL-TA-3M\)/);
+  assert.doesNotMatch(page.element("#candidates").text,
+    /Required route|undefined|Cable grade and max length|one listed transceiver/);
+});
+
+test("combined copper grades count as one Ethernet connection with all limits visible", () => {
+  const page = dashboard();
+  const data = result([null, null]);
+  data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+  Object.assign(data.candidates[0], {
+    standard: "1000BASE-T", speed_gbps: 1, cable: "RJ45",
+    cable_options: {CAT5E: 100, CAT6: 100, CAT6A: 100, CAT7: 100, CAT8: 100},
+  });
+  page.render(data);
+  assert.equal(page.element("#status").text, "Connection option found");
+  assert.equal(page.element("#candidates").children.length, 1);
+  assert.match(page.element("#candidates").text, /1 Gbps \| Copper Ethernet/);
+  assert.match(page.element("#candidates").text,
+    /CAT5E: 100 m.*CAT6: 100 m.*CAT6A: 100 m.*CAT7: 100 m.*CAT8: 100 m/);
+});
+
+test("submitting device-only sends only devices and ignores results for changed selections", async () => {
+  const page = dashboard();
+  const fields = deviceFields(page);
+  let finish;
+  let sent;
+  const responseBody = new Promise(resolve => { finish = resolve; });
+  page.context.fetch = async (url, options) => {
+    sent = {url, body: JSON.parse(options.body)};
+    return {ok: true, json: () => responseBody};
+  };
+  const submit = page.element("#planner").listeners.get("submit");
+  const pending = submit({preventDefault() {}});
+  await Promise.resolve();
+  assert.deepEqual(sent, {
+    url: "/api/plan", body: {mode: "devices", endpoint_a: "a", endpoint_b: "b"},
+  });
+  fields.endpoint_b.value = "a";
+  finish(result());
+  await pending;
+  assert.equal(page.element("#result").hidden, true);
+  assert.equal(vm.runInContext("submitting", page.context), false);
+});
+
+test("device-only submission renders current results and surfaces API failures", async () => {
+  const page = dashboard();
+  deviceFields(page);
+  const data = result();
+  data.request = {mode: "devices", endpoint_a: "a", endpoint_b: "b"};
+  Object.assign(data.candidates[0], {speed_gbps: 1, cable_options: {OM3: 550}});
+  page.context.fetch = async () => ({ok: true, json: async () => data});
+  const submit = page.element("#planner").listeners.get("submit");
+  await submit({preventDefault() {}});
+  assert.equal(page.element("#result").hidden, false);
+  assert.match(page.element("#candidates").text, /OM3: 550 m/);
+  assert.equal(vm.runInContext("button.disabled", page.context), false);
+  page.context.fetch = async () => ({ok: false, json: async () => ({error: "Unknown endpoint_a"})});
+  await submit({preventDefault() {}});
+  assert.equal(page.element("#result").hidden, true);
+  assert.equal(page.element("#error").text, "Unknown endpoint_a");
+  assert.equal(vm.runInContext("button.disabled", page.context), false);
+});
 
 test("fiber results show readable device cards, quantities and reach instead of API status", () => {
   const page = dashboard();

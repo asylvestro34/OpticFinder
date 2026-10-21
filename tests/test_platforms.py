@@ -154,7 +154,7 @@ class PlatformTests(unittest.TestCase):
             ("ms130-24x", "rj45-mgig", "mx95", "rj45-wan", 2.5),
             ("ms150-24mp-4x", "rj45-mgig", "ms150-48mp-4x", "rj45-mgig", 5),
         ):
-            for cable in ("CAT5E", "CAT6", "CAT6A"):
+            for cable in ("CAT5E", "CAT6", "CAT6A", "CAT7", "CAT8"):
                 with self.subTest(speed=speed, cable=cable):
                     result = link(a, group_a, b, group_b, speed, cable, 100)
                     self.assertEqual(len(result["candidates"]), 1)
@@ -167,7 +167,19 @@ class PlatformTests(unittest.TestCase):
             ("ms130-24x", "rj45-mgig", "ms150-24mp-4x", "rj45-mgig", 5),
             ("ms150-24mp-4x", "rj45-mgig", "ms150-48mp-4x", "rj45-mgig", 10),
         ):
-            self.assertEqual(link(a, group_a, b, group_b, speed, "CAT6A")["candidates"], [])
+            for cable in ("CAT6A", "CAT7", "CAT8"):
+                self.assertEqual(link(a, group_a, b, group_b, speed, cable)["candidates"], [])
+
+    def test_higher_copper_categories_do_not_qualify_optics_or_unsupported_speeds(self):
+        for cable in ("CAT7", "CAT8"):
+            for speed in (10, 25, 40):
+                with self.subTest(cable=cable, speed=speed):
+                    self.assertEqual(link("ms150-24mp-4x", "rj45-mgig",
+                                          "ms150-48mp-4x", "rj45-mgig", speed, cable)["candidates"], [])
+            rugged = link("ms130r-8p", "sfp-uplink", "ms130-24p", "sfp-uplink", 1, cable)
+            self.assertEqual(rugged["candidates"][0]["endpoint_optic_candidates"], {
+                "endpoint_a": "GLC-T-RGD", "endpoint_b": "MA-SFP-1GB-TX",
+            })
 
     def test_native_copper_does_not_require_ordinary_copper_sfp_qualification(self):
         for model, group in (("ms130r-8p", "rj45-1g"), ("mx67", "rj45-lan")):

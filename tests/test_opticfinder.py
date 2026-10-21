@@ -1,11 +1,14 @@
 import json
+import subprocess
+import sys
 import threading
 import unittest
 from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 
-from opticfinder.engine import load_catalog, plan
-from opticfinder.server import Handler
+from opticfinder.engine import _combine_cable_options, load_catalog, plan
+from opticfinder.server import Handler, serve_local
 
 
 def request_data(**changes):
@@ -93,7 +96,7 @@ class MerakiTests(unittest.TestCase):
         self.assertEqual(result["candidates"][0]["standard"], "1000BASE-SX")
 
     def test_native_copper_and_pluggable_copper(self):
-        for cable in ("CAT5E", "CAT6", "CAT6A"):
+        for cable in ("CAT5E", "CAT6", "CAT6A", "CAT7", "CAT8"):
             for a, b in (("rj45-1g", "rj45-1g"), ("rj45-1g", "sfp-uplink"),
                          ("sfp-uplink", "rj45-1g"), ("sfp-uplink", "sfp-uplink")):
                 with self.subTest(cable=cable, a=a, b=b):
@@ -125,7 +128,8 @@ class MerakiTests(unittest.TestCase):
     def test_invalid_interface_and_media(self):
         for changes in ({"interface_a": "port999"}, {"interface_a": []},
                         {"endpoint_a": "ms130-24p", "interface_a": "rj45-mgig"},
-                        {"cable_type": "MMF"}, {"fiber": "OM3"}, {"cable_type": "CAT7"}):
+                        {"cable_type": "MMF"}, {"fiber": "OM3"}, {"cable_type": "CAT9"},
+                        {"cable_type": "CAT8.2"}):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 plan(meraki_request(**changes))
 
@@ -204,6 +208,195 @@ class EngineTests(unittest.TestCase):
             self.assertTrue(source["url"].startswith("https://"))
         self.assertTrue(all(endpoint["vendor"] == "Meraki" for endpoint in catalog["endpoints"]))
 
+    def test_devices_only_lists_all_profiles_and_port_alternatives_without_assumed_length(self):
+        result = plan({"mode": "devices", "endpoint_a": "ms130-24x", "endpoint_b": "ms130-24x"})
+        self.assertEqual(result["status"], "not_verified")
+        self.assertNotIn("distance_m", result["request"])
+        self.assertNotIn("speed_gbps", result["request"])
+        self.assertFalse(result["exclusions"])
+        candidates = result["candidates"]
+        dac = [candidate for candidate in candidates if candidate.get("assembly_options")]
+        self.assertEqual(len(dac), 1)
+        self.assertEqual(dac[0]["assembly_options"], [
+            {"part": "MA-CBL-TA-1M", "length_m": 1},
+            {"part": "MA-CBL-TA-3M", "length_m": 3},
+        ])
+        self.assertEqual(dac[0]["cable_options"], {"DAC": 3})
+        for assembly in dac[0]["assembly_options"]:
+            detailed = plan(request_data(cable_type="DAC", distance_m=assembly["length_m"]))
+            self.assertTrue(any(c["assembly_part"] == assembly["part"] for c in detailed["candidates"]))
+            beyond = plan(request_data(cable_type="DAC", distance_m=assembly["length_m"] + .01))
+            self.assertFalse(any(c["assembly_part"] == assembly["part"] for c in beyond["candidates"]))
+        self.assertTrue(any(candidate["cable_options"].get("OM4") == 400 for candidate in candidates))
+        copper = next(candidate for candidate in candidates if candidate["standard"] == "1000BASE-T")
+        self.assertEqual(sum(c["standard"] == "1000BASE-T" for c in candidates), 1)
+        self.assertEqual(copper["cable_options"], {
+            "CAT5E": 100, "CAT6": 100, "CAT6A": 100, "CAT7": 100, "CAT8": 100,
+        })
+        self.assertTrue(any("Cat8.2" in note for note in copper["requirements"]))
+        self.assertTrue(any("Class F" in note for note in copper["requirements"]))
+        self.assertTrue(any("shield" in note for note in copper["requirements"]))
+        self.assertIn("fluke-copper-categories", copper["sources"])
+        self.assertIn("fluke-class-f", copper["sources"])
+        self.assertEqual(
+            {option["connection"] for option in copper["endpoint_connection_options"]["endpoint_a"]},
+            {"native_rj45", "transceiver"},
+        )
+        for candidate in candidates:
+            for cable, reach in candidate["cable_options"].items():
+                for a in candidate["endpoint_connection_options"]["endpoint_a"]:
+                    for b in candidate["endpoint_connection_options"]["endpoint_b"]:
+                        with self.subTest(standard=candidate["standard"], cable=cable, a=a, b=b):
+                            detailed = plan(request_data(
+                                interface_a=a["interface_group"], interface_b=b["interface_group"],
+                                speed_gbps=candidate["speed_gbps"], cable_type=cable, distance_m=reach,
+                            ))
+                            self.assertTrue(any(
+                                match["standard"] == candidate["standard"]
+                                and (not candidate.get("assembly_options") or {
+                                    "part": match.get("assembly_part"),
+                                    "length_m": match.get("assembly_length_m"),
+                                } in candidate["assembly_options"])
+                                and match["endpoint_connection_options"] == {
+                                    "endpoint_a": [a], "endpoint_b": [b]
+                                }
+                                for match in detailed["candidates"]
+                            ))
+
+    def test_devices_only_respects_model_qualification_and_port_speeds(self):
+        catalog = load_catalog()
+        for a, b in (("ms130-24x", "ms130-24p"), ("ms130r-8p", "ms130-24x"),
+                     ("mx95", "ms150-24p-4x"), ("ms450-12", "ms450-12"),
+                     ("mx67", "mx67")):
+            with self.subTest(a=a, b=b):
+                result = plan({"mode": "devices", "endpoint_a": a, "endpoint_b": b})
+                self.assertTrue(result["candidates"])
+                expected = []
+                for profile in catalog["connection_profiles"]:
+                    endpoints = [next(e for e in catalog["endpoints"] if e["id"] == id_)
+                                 for id_ in (a, b)]
+                    if (all(e["id"] in profile["endpoint_ids"] for e in endpoints)
+                            and all(any(e["id"] in group for e in endpoints)
+                                    for group in profile.get("endpoint_groups", []))
+                            and all(any(
+                                profile["speed_gbps"] in port["speeds_gbps"]
+                                and port["kind"] in (
+                                    profile["parts_by_endpoint"].get(e["id"], {})
+                                    if "parts_by_endpoint" in profile else profile["parts_by_port_kind"]
+                                ) for port in e["interfaces"]
+                            ) for e in endpoints)):
+                        expected.append(profile)
+                self.assertEqual(
+                    {(c["standard"], c["speed_gbps"], grade, reach)
+                     for c in result["candidates"] for grade, maximum in c["cable_options"].items()
+                     for reach in ([a["length_m"] for a in c["assembly_options"]]
+                                   if c.get("assembly_options") else [maximum])},
+                    {(p["standard"], p["speed_gbps"], grade, reach)
+                     for p in expected for grade, reach in p["reach_m"].items()},
+                )
+                for candidate in result["candidates"]:
+                    for field, endpoint in zip(("endpoint_a", "endpoint_b"), endpoints):
+                        for option in candidate["endpoint_connection_options"][field]:
+                            port = next(p for p in endpoint["interfaces"]
+                                        if p["id"] == option["interface_group"])
+                            self.assertIn(candidate["speed_gbps"], port["speeds_gbps"])
+                            for grade, reach in candidate["cable_options"].items():
+                                self.assertTrue(any(
+                                    p["standard"] == candidate["standard"]
+                                    and p["speed_gbps"] == candidate["speed_gbps"]
+                                    and p["reach_m"].get(grade) == reach
+                                    and p.get("minimum_distance_m", 0) == candidate["minimum_distance_m"]
+                                    and (not candidate.get("assembly_options") or {
+                                        "part": p.get("assembly_part"), "length_m": p.get("assembly_length_m"),
+                                    } in candidate["assembly_options"])
+                                    and all(r in candidate["requirements"] for r in p.get("requirements", []))
+                                    and port["kind"] in (
+                                        p["parts_by_endpoint"].get(endpoint["id"], {})
+                                        if "parts_by_endpoint" in p else p["parts_by_port_kind"]
+                                    )
+                                    and (option["connection"] == "direct_attach" or option["part"] == (
+                                        p["parts_by_endpoint"].get(endpoint["id"], {})
+                                        if "parts_by_endpoint" in p else p["parts_by_port_kind"]
+                                    )[port["kind"]])
+                                    for p in expected
+                                ))
+
+    def test_combining_grades_preserves_connection_differences_and_sources(self):
+        base = {
+            "standard": "1000BASE-T", "speed_gbps": 1, "cable": "RJ45",
+            "endpoint_connection_options": {"endpoint_a": [{"part": None}]},
+            "requirements": [], "minimum_distance_m": 0,
+            "cable_options": {"CAT5E": 100}, "sources": ["first"],
+        }
+        combined = _combine_cable_options([
+            base,
+            {**base, "cable_options": {"CAT6": 100}, "sources": ["second"]},
+            {**base, "cable_options": {"CAT6A": 100}, "sources": ["first"]},
+        ])
+        self.assertEqual(len(combined), 1)
+        self.assertEqual(combined[0]["cable_options"], {"CAT5E": 100, "CAT6": 100, "CAT6A": 100})
+        self.assertEqual(combined[0]["sources"], ["first", "second"])
+        self.assertEqual(base["cable_options"], {"CAT5E": 100})
+        for changes in (
+            {"speed_gbps": 2.5}, {"standard": "2.5GBASE-T"},
+            {"endpoint_connection_options": {"endpoint_a": [{"part": "optic"}]}},
+            {"requirements": ["Cable-specific requirement"]}, {"minimum_distance_m": 2},
+            {"assembly_part": "DAC-1M", "assembly_length_m": 1},
+            {"cable_options": {"CAT5E": 55}},
+        ):
+            with self.subTest(changes=changes):
+                self.assertEqual(len(_combine_cable_options([base, {**base, **changes}])), 2)
+
+    def test_fiber_grades_combine_without_losing_their_reaches(self):
+        result = plan({"mode": "devices", "endpoint_a": "ms130-24x", "endpoint_b": "ms130-24p"})
+        sx = [c for c in result["candidates"] if c["standard"] == "1000BASE-SX"]
+        self.assertEqual(len(sx), 1)
+        self.assertEqual(sx[0]["cable_options"], {"OM1": 220, "OM2": 550, "OM3": 550, "OM4": 1000})
+
+    def test_dac_grouping_preserves_different_speeds_ports_and_requirements(self):
+        base = {
+            "standard": "10GBASE-CR", "speed_gbps": 10, "cable": "SFP+",
+            "endpoint_connection_options": {"endpoint_a": [{"interface_group": "sfp"}]},
+            "requirements": [], "minimum_distance_m": 0,
+            "cable_options": {"DAC": 1}, "sources": ["first"],
+            "assembly_part": "DAC-1M", "assembly_length_m": 1,
+        }
+        longer = {**base, "assembly_part": "DAC-3M", "assembly_length_m": 3,
+                  "cable_options": {"DAC": 3}, "sources": ["second"]}
+        combined = _combine_cable_options([longer, base, base])
+        self.assertEqual(len(combined), 1)
+        self.assertEqual(combined[0]["assembly_options"], [
+            {"part": "DAC-1M", "length_m": 1}, {"part": "DAC-3M", "length_m": 3},
+        ])
+        self.assertEqual(combined[0]["cable_options"], {"DAC": 3})
+        self.assertEqual(combined[0]["sources"], ["second", "first"])
+        self.assertNotIn("assembly_part", combined[0])
+        self.assertEqual(base["assembly_part"], "DAC-1M")
+        for changes in ({"speed_gbps": 40}, {"requirements": ["Different firmware required"]},
+                        {"minimum_distance_m": 1},
+                        {"endpoint_connection_options": {"endpoint_a": [{"interface_group": "qsfp"}]}}):
+            with self.subTest(changes=changes):
+                self.assertEqual(len(_combine_cable_options([base, {**longer, **changes}])), 2)
+
+    def test_devices_only_validates_inputs_and_never_ignores_filters(self):
+        request = {"mode": "devices", "endpoint_a": "ms130-24x", "endpoint_b": "ms130-24p"}
+        for changes in ({"endpoint_a": []}, {"endpoint_b": "unknown"}, {"mode": "unknown"},
+                        {"interface_a": "sfp-uplink"}, {"distance_m": 30},
+                        {"speed_gbps": 1}, {"cable_type": "OM3"}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                plan({**request, **changes})
+        with self.assertRaises(ValueError):
+            plan({"mode": "devices", "endpoint_a": "ms130-24x"})
+
+    def test_devices_only_cli(self):
+        command = [sys.executable, "-m", "opticfinder", "check", "--devices-only",
+                   "--endpoint-a", "ms130-24x", "--endpoint-b", "ms130-24p"]
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        self.assertTrue(json.loads(result.stdout)["candidates"])
+        rejected = subprocess.run([*command, "--distance-m", "30"], capture_output=True, text=True)
+        self.assertNotEqual(rejected.returncode, 0)
+        self.assertIn("cannot be combined", rejected.stderr)
+
 
 class ServerTests(unittest.TestCase):
     @classmethod
@@ -235,6 +428,9 @@ class ServerTests(unittest.TestCase):
                 self.assertIn("Content-Security-Policy", headers)
                 if path == "/":
                     page = body.decode()
+                    self.assertIn('<option value="devices" selected>', page)
+                    self.assertIn('<label id="port-field-a" hidden>', page)
+                    self.assertIn('<label id="port-field-b" hidden>', page)
                     self.assertIn('name="interface_a" required', page)
                     self.assertIn('name="interface_b" required', page)
                     self.assertIn('<fieldset id="link-requirements" hidden disabled>', page)
@@ -271,6 +467,50 @@ class ServerTests(unittest.TestCase):
                                     {"Content-Type": "application/json"})
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body)["status"], "not_verified")
+
+    def test_devices_only_api(self):
+        status, body, _ = self.call("POST", "/api/plan", json.dumps({
+            "mode": "devices", "endpoint_a": "ms130-24x", "endpoint_b": "ms130-24p",
+        }), {"Content-Type": "application/json"})
+        self.assertEqual(status, 200)
+        result = json.loads(body)
+        self.assertTrue(result["candidates"])
+        self.assertEqual({c["speed_gbps"] for c in result["candidates"]}, {1})
+
+    def test_explicit_bind_uses_exact_host_and_same_origin(self):
+        with ThreadingHTTPServer(("127.0.0.2", 0), Handler) as server:
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                host = f"127.0.0.2:{server.server_port}"
+                for headers, expected in (
+                    ({}, 200),
+                    ({"Host": host, "Origin": f"http://{host}"}, 200),
+                    ({"Host": f"127.0.0.1:{server.server_port}"}, 403),
+                    ({"Origin": "http://example.com"}, 403),
+                    ({"Origin": "null"}, 403),
+                ):
+                    with self.subTest(headers=headers):
+                        connection = HTTPConnection("127.0.0.2", server.server_port, timeout=5)
+                        try:
+                            connection.request("GET", "/health", headers=headers)
+                            response = connection.getresponse()
+                            self.assertEqual(response.status, expected)
+                            response.read()
+                        finally:
+                            connection.close()
+            finally:
+                server.shutdown()
+                thread.join()
+
+    def test_serve_binds_specific_address_and_rejects_wildcards(self):
+        for address in ("0.0.0.0", "224.0.0.1", "example.com", "::1"):
+            with self.subTest(address=address), self.assertRaises(ValueError):
+                serve_local(8765, address)
+        with patch("opticfinder.server.ThreadingHTTPServer") as server, patch("builtins.print"):
+            server.return_value.__enter__.return_value.serve_forever.side_effect = KeyboardInterrupt
+            serve_local(8765, "192.168.1.25")
+            server.assert_called_once_with(("192.168.1.25", 8765), Handler)
 
     def test_meraki_api_requires_port_groups_and_rejects_other_vendors(self):
         for data in ({"endpoint_a": "ms130-24x", "endpoint_b": "ms130-24x",

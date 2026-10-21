@@ -272,16 +272,16 @@ def link_profiles(matrix, endpoints, additional_accessories):
     )
     copper = [profile for profile in profiles if profile["media"] == "copper"]
     profiles = [profile for profile in profiles if profile["media"] != "copper"]
-    for speed, grades in ((1, ("CAT5E", "CAT6", "CAT6A")),
-                          (2.5, ("CAT5E", "CAT6", "CAT6A")),
-                          (5, ("CAT5E", "CAT6", "CAT6A"))):
+    for speed in (1, 2.5, 5):
+        grades = ("CAT5E", "CAT6", "CAT6A", "CAT7", "CAT8")
         for grade in grades:
             parts_by_endpoint = {}
-            sources = {"copper-rule"}
+            sources = {"copper-rule", "fluke-copper-categories", "fluke-class-f"}
             if speed > 1:
                 sources.add("cisco-mgig-cabling")
             for profile in copper:
-                if profile["speed_gbps"] != speed or grade not in profile["reach_m"]:
+                qualification_grade = "CAT6A" if grade in {"CAT7", "CAT8"} else grade
+                if profile["speed_gbps"] != speed or qualification_grade not in profile["reach_m"]:
                     continue
                 for endpoint_id in profile["endpoint_ids"]:
                     parts_by_endpoint.setdefault(endpoint_id, {}).update(profile["parts_by_port_kind"])
@@ -300,6 +300,14 @@ def link_profiles(matrix, endpoints, additional_accessories):
                     "parts_by_port_kind": {"rj45": None},
                     "reach_m": {grade: 100}, "wavelength_nm": None, "connector": "RJ45",
                     "sources": sorted(sources),
+                    "requirements": [
+                        "For Cat7 or Cat8, verify shield continuity and correct shield termination.",
+                        "Cat7 must form an RJ45-compatible channel meeting the selected Ethernet "
+                        "application requirements; Cat7 labeling alone does not establish Class F performance.",
+                        "Use RJ45-compatible TIA Cat8 or ISO Cat8.1, not Cat8.2. "
+                        "The listed 100m reach applies only to the selected lower-speed application, "
+                        "not 25GBASE-T or 40GBASE-T.",
+                    ],
                 })
     # Only the explicitly documented rugged alternatives need mixed-part optical profiles.
     optical = [profile for profile in profiles if profile["media"] == "fiber"]

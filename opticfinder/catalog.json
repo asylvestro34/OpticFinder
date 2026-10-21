@@ -20,6 +20,8 @@
     {"id": "CAT5E", "label": "Copper - Cat5e"},
     {"id": "CAT6", "label": "Copper - Cat6"},
     {"id": "CAT6A", "label": "Copper - Cat6A"},
+    {"id": "CAT7", "label": "Copper - Cat7 (RJ45-compatible channel)"},
+    {"id": "CAT8", "label": "Copper - Cat8 / Cat8.1 (RJ45-compatible)"},
     {"id": "DAC", "label": "Direct attach - passive twinax"}
   ],
   "sources": [
@@ -45,7 +47,21 @@
       "url": "https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories",
       "reviewed_on": "2026-10-20",
       "state": "engineering_rule",
-      "scope": "Engineering rules, not device-specific category qualifications: certified four-pair Cat5e/Cat6/Cat6A channels including patch leads, 1G/2.5G/5G to 100m. Only documented native port speeds are offered. Native RJ45 does not require transceiver qualification. Cisco Multigigabit Ethernet white paper documents 802.3bz operation over existing Cat5e."
+      "scope": "Engineering rules, not device-specific category qualifications: certified four-pair Cat5e/Cat6/Cat6A channels including patch leads, 1G/2.5G/5G to 100m. Cat7 and RJ45-compatible Cat8/Cat8.1 are lower-speed alternatives only when the complete channel meets the application's requirements. Cat7 labeling does not establish Class F performance; Cat8.2 connectors are excluded. Only documented native port speeds and qualified accessories are offered. Native RJ45 does not require transceiver qualification."
+    },
+    {
+      "id": "fluke-copper-categories",
+      "title": "Fluke Networks Cat8 cabling and connector compatibility",
+      "url": "https://www.flukenetworks.com/knowledge-base/applicationstandards-articles-copper/category-8-cabling-fact-sheet",
+      "reviewed_on": "2026-10-21", "state": "reviewed",
+      "scope": "Cat8 supports 10G and lower applications at 100m when the channel meets application requirements. TIA Cat8 and ISO Cat8.1 are RJ45-compatible; Cat8.2 is not. Shield continuity and termination require verification. Does not qualify device speeds or accessories."
+    },
+    {
+      "id": "fluke-class-f",
+      "title": "Fluke Networks Class F cabling guide",
+      "url": "https://www.flukenetworks.com/knowledge-base/dtx-cableanalyzer/class-f-dtx-cableanalyzer",
+      "reviewed_on": "2026-10-21", "state": "reviewed",
+      "scope": "Cat7/Class F connector and channel requirements. A cable category label alone does not establish a Class F channel; RJ45 application compatibility must be checked separately."
     },
     {
       "id": "cisco-mgig-cabling", "title": "Cisco Multigigabit Ethernet Technology",

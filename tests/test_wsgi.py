@@ -79,6 +79,15 @@ class WSGITests(unittest.TestCase):
         self.assertEqual(json.loads(response["body"])["candidates"][0]["endpoint_optic_candidates"],
                          {"endpoint_a": "MA-SFP-10GB-SR", "endpoint_b": "MA-SFP-10GB-SR"})
 
+    def test_public_devices_only_plan(self):
+        response = self.call("/api/plan", "POST", json.dumps({
+            "mode": "devices", "endpoint_a": "mx95", "endpoint_b": "ms150-24p-4x",
+        }).encode(), HTTP_ORIGIN="https://opticfinder.ddns.net")
+        self.assertEqual(response["status"], 200)
+        result = json.loads(response["body"])
+        self.assertTrue(result["candidates"])
+        self.assertNotIn("distance_m", result["request"])
+
     def test_request_bounds_and_errors(self):
         for body, changes, expected in (
             (b"{}", {}, 400), (b"[]", {}, 400), (b"{", {}, 400),

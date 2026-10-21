@@ -42,11 +42,17 @@
     <aside id="coverage"><strong>Device availability.</strong> Device choices may be limited
       while the tool is in testing. Management and stacking ports are excluded.</aside>
     <form id="planner">
+      <label>Planning mode
+        <select name="mode">
+          <option value="devices" selected>Devices only - show all options</option>
+          <option value="detailed">Detailed - filter ports, speed and cable</option>
+        </select>
+      </label>
       <div class="connection-layout" aria-label="Connection endpoints">
         <fieldset class="device-card">
           <legend>Device A</legend>
           <label>Device model <select name="endpoint_a" required></select></label>
-          <label>Port group <select name="interface_a" required disabled></select></label>
+          <label id="port-field-a" hidden>Port group <select name="interface_a" required disabled></select></label>
           <p id="device-notes-a" class="port-description" aria-live="polite"></p>
         </fieldset>
         <div class="cable-visual" aria-hidden="true">
@@ -58,14 +64,14 @@
         <fieldset class="device-card">
           <legend>Device B</legend>
           <label>Device model <select name="endpoint_b" required></select></label>
-          <label>Port group <select name="interface_b" required disabled></select></label>
+          <label id="port-field-b" hidden>Port group <select name="interface_b" required disabled></select></label>
           <p id="device-notes-b" class="port-description" aria-live="polite"></p>
         </fieldset>
       </div>
-      <p>Choose the port group at each end. Interface choices describe port groups,
-        not individual port numbers. The same model selected twice represents two
-        separate devices.</p>
-      <p id="compatibility" role="status" aria-live="polite">Choose a device and port group at each end to see available link options.</p>
+      <p>Choose two devices to list all options in the bundled catalog, including usable
+        port groups and cable limits. Use detailed mode to narrow the results.
+        The same model selected twice represents two separate devices.</p>
+      <p id="compatibility" role="status" aria-live="polite">Choose a device at each end. No port or cable inputs needed.</p>
       <fieldset id="link-requirements" hidden disabled>
         <legend>Link requirements</legend>
         <label>Speed (Gbps) <select name="speed_gbps" required></select></label>
@@ -74,7 +80,7 @@
         <label>Cable type / grade <select name="cable_type" required></select></label>
         <p>For fiber, choose the actual fiber grade; MMF/SMF alone is not specific enough.</p>
       </fieldset>
-      <button disabled>Check connection</button>
+      <button disabled>Show all options</button>
     </form>
     <p id="error" role="alert"></p>
     <section id="result" aria-live="polite" hidden>
